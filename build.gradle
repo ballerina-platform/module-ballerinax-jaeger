@@ -242,6 +242,5 @@ release {
 }
 
 task build {
-    dependsOn('prometheus-extension-ballerina:build')
     dependsOn('jaeger-extension-ballerina:build')
 }
