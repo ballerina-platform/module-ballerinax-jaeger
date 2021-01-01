@@ -25,6 +25,7 @@ dependencies {
     implementation "org.ballerinalang:ballerina-config:${ballerinaLangVersion}"
     implementation "io.jaegertracing:jaeger-core:${jaegerVersion}"
     implementation "io.jaegertracing:jaeger-thrift:${jaegerVersion}"
+    implementation "io.opentracing:opentracing-noop:${openTracingVersion}"
     implementation "org.apache.thrift:libthrift:${libThriftVersion}"
     implementation "com.squareup.okhttp3:okhttp:${okHttpVersion}"
     implementation "com.squareup.okio:okio:${okIoVersion}"

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
@@ -16,7 +15,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package io.ballerina.observe.trace.jaeger;
 
 import static io.ballerina.runtime.observability.ObservabilityConstants.CONFIG_TABLE_TRACING;

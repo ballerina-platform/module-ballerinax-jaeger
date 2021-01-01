@@ -22,11 +22,11 @@ public class TracerProvider {
     #
     # + return - `()` if no error occurred, and an error otherwise
     public function initialize() returns error? {
-        check externInitialize();
+        check externInitializeConfigurations();
     }
 }
 
-function externInitialize() returns error? = @java:Method {
+function externInitializeConfigurations() returns error? = @java:Method {
     'class: "io.ballerina.observe.trace.jaeger.JaegerTracerProvider",
-    name: "init"
+    name: "initializeConfigurations"
 } external;

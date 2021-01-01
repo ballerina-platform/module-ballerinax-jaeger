@@ -52,7 +52,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
     @Test
     public void testJaegerMetrics() throws Exception {
         LogLeecher jaegerServerLogLeecher = new LogLeecher(
-                "ballerina: started publishing tracers to Jaeger on localhost:5775");
+                "ballerina: started publishing traces to Jaeger on localhost:5775");
         serverInstance.addLogLeecher(jaegerServerLogLeecher);
         LogLeecher errorLogLeacher = new LogLeecher("error");
         serverInstance.addErrorLogLeecher(errorLogLeacher);
@@ -80,7 +80,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
     @Test
     public void testJaegerDisabled() throws Exception {
         LogLeecher jaegerServerLogLeecher = new LogLeecher(
-                "ballerina: started publishing tracers to Jaeger on localhost:5775");
+                "ballerina: started publishing traces to Jaeger on localhost:5775");
         serverInstance.addLogLeecher(jaegerServerLogLeecher);
         LogLeecher errorLogLeacher = new LogLeecher("error");
         serverInstance.addErrorLogLeecher(errorLogLeacher);

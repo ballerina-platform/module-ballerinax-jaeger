@@ -25,6 +25,7 @@ import io.jaegertracing.internal.samplers.ConstSampler;
 import io.jaegertracing.internal.samplers.ProbabilisticSampler;
 import io.jaegertracing.internal.samplers.RateLimitingSampler;
 import io.opentracing.Tracer;
+import io.opentracing.noop.NoopTracerFactory;
 import org.ballerinalang.config.ConfigRegistry;
 
 import java.io.PrintStream;
@@ -59,7 +60,13 @@ public class JaegerTracerProvider implements TracerProvider {
     private static final PrintStream console = System.out;
     private static final PrintStream consoleError = System.err;
 
-    public static Object init() {
+    /**
+     * Initialize Jaeger configurations.
+     * This is called by the TracerProvider ballerina object.
+     *
+     * @return Error if initializing configurations fails
+     */
+    public static Object initializeConfigurations() {
         configRegistry = ConfigRegistry.getInstance();
         try {
             port = Integer.parseInt(
@@ -69,9 +76,9 @@ public class JaegerTracerProvider implements TracerProvider {
             samplerType = configRegistry.getConfigOrDefault(SAMPLER_TYPE_CONFIG, DEFAULT_SAMPLER_TYPE);
             if (!(samplerType.equals(ConstSampler.TYPE) || samplerType.equals(RateLimitingSampler.TYPE)
                     || samplerType.equals(ProbabilisticSampler.TYPE))) {
+                consoleError.println("error: invalid Jaeger configuration sampler type: " + samplerType
+                        + " invalid. using default const sampling");
                 samplerType = DEFAULT_SAMPLER_TYPE;
-                consoleError.println(
-                        "error: Jaeger configuration: \"sampler type\" invalid. Defaulted to const sampling");
             }
 
             samplerParam = Float.valueOf(
@@ -80,19 +87,18 @@ public class JaegerTracerProvider implements TracerProvider {
                     REPORTER_FLUSH_INTERVAL_MS_CONFIG, String.valueOf(DEFAULT_REPORTER_FLUSH_INTERVAL)));
             reporterBufferSize = Integer.parseInt(configRegistry.getConfigOrDefault
                     (REPORTER_MAX_BUFFER_SPANS_CONFIG, String.valueOf(DEFAULT_REPORTER_MAX_BUFFER_SPANS)));
-
         } catch (IllegalArgumentException | ArithmeticException e) {
-            return ErrorCreator.createError(StringUtils.fromString("initializing Jaeger tracer failed: "
+            return ErrorCreator.createError(StringUtils.fromString("reading Jaeger configurations failed: "
                     + e.getMessage()));
         }
-        console.println("ballerina: started publishing tracers to Jaeger on " + hostname + ":" + port);
+        console.println("ballerina: started publishing traces to Jaeger on " + hostname + ":" + port);
         return null;
     }
 
     @Override
     public Tracer getTracer(String serviceName) {
         if (Objects.isNull(configRegistry)) {
-            throw new IllegalStateException("Tracer not initialized with configurations");
+            throw new IllegalStateException("invalid Jaeger configurations");
         }
 
         return new Configuration(serviceName)
@@ -107,7 +113,7 @@ public class JaegerTracerProvider implements TracerProvider {
                         .withFlushInterval(reporterFlushInterval)
                         .withMaxQueueSize(reporterBufferSize))
                 .getTracerBuilder()
-                .withScopeManager(NoOpScopeManager.INSTANCE)
+                .withScopeManager(NoopTracerFactory.create().scopeManager())
                 .build();
     }
 }

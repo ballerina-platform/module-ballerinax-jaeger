@@ -38,7 +38,8 @@ import static io.ballerina.observe.trace.jaeger.Constants.TRACER_PROPERTIES_FILE
  * This is the Jaeger tracing extension class for {@link TracerProviderFactory}.
  */
 public class JaegerTracerProviderFactory implements TracerProviderFactory {
-    private static final PrintStream console = System.out;
+    private static final PrintStream consoleError = System.err;
+    private TracerProvider provider;
 
     @Override
     public String getName() {
@@ -47,6 +48,7 @@ public class JaegerTracerProviderFactory implements TracerProviderFactory {
 
     @Override
     public BObject getProviderBObject() {
+        provider = new JaegerTracerProvider();
         String jaegerModuleVersion;
         try {
             InputStream stream = getClass().getClassLoader().getResourceAsStream(TRACER_PROPERTIES_FILE);
@@ -54,7 +56,7 @@ public class JaegerTracerProviderFactory implements TracerProviderFactory {
             tracerProperties.load(stream);
             jaegerModuleVersion = (String) tracerProperties.get(PACKAGE_VERSION_PROPERTY_KEY);
         } catch (IOException | ClassCastException e) {
-            console.println("ballerina: unexpected failure in detecting Jaeger extension version");
+            consoleError.println("error: unexpected failure in detecting Jaeger extension version");
             return null;
         }
         Module jaegerModule = new Module(PACKAGE_ORG, PACKAGE_NAME, jaegerModuleVersion);
@@ -63,6 +65,9 @@ public class JaegerTracerProviderFactory implements TracerProviderFactory {
 
     @Override
     public TracerProvider getProvider() {
-        return new JaegerTracerProvider();
+        if (provider == null) {
+            provider = new JaegerTracerProvider();
+        }
+        return provider;
     }
 }
