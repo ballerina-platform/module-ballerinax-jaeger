@@ -39,6 +39,9 @@ public class JaegerTracesTestCase extends BaseTestCase {
     private static final File RESOURCES_DIR = Paths.get("src", "test", "resources", "bal").toFile();
     private static final String TEST_RESOURCE_URL = "http://localhost:9091/test/sum";
 
+    private static final String JAEGER_EXTENSION_LOG_PREFIX = "ballerina: started publishing traces to Jaeger on ";
+    private static final String SAMPLE_SERVER_LOG = "[ballerina/http] started HTTP/WS listener 0.0.0.0:9091";
+
     @BeforeMethod
     public void setup() throws Exception {
         serverInstance = new BServerInstance(balServer);
@@ -51,11 +54,14 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
     @Test
     public void testJaegerMetrics() throws Exception {
-        LogLeecher jaegerServerLogLeecher = new LogLeecher(
-                "ballerina: started publishing traces to Jaeger on localhost:5775");
-        serverInstance.addLogLeecher(jaegerServerLogLeecher);
-        LogLeecher errorLogLeacher = new LogLeecher("error");
-        serverInstance.addErrorLogLeecher(errorLogLeacher);
+        LogLeecher jaegerExtLogLeecher = new LogLeecher(JAEGER_EXTENSION_LOG_PREFIX + "localhost:5775");
+        serverInstance.addLogLeecher(jaegerExtLogLeecher);
+        LogLeecher sampleServerLogLeecher = new LogLeecher(SAMPLE_SERVER_LOG);
+        serverInstance.addLogLeecher(sampleServerLogLeecher);
+        LogLeecher errorLogLeecher = new LogLeecher("error");
+        serverInstance.addErrorLogLeecher(errorLogLeecher);
+        LogLeecher exceptionLogLeecher = new LogLeecher("Exception");
+        serverInstance.addErrorLogLeecher(exceptionLogLeecher);
 
         final String[] runtimeArgs = new String[]{
                 "--" + CONFIG_TRACING_ENABLED + "=true",
@@ -63,7 +69,8 @@ public class JaegerTracesTestCase extends BaseTestCase {
         final String balFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), "01_http_svc_test.bal").toFile()
                 .getAbsolutePath();
         serverInstance.startServer(balFile, null, runtimeArgs, new int[] { 9091 });
-        jaegerServerLogLeecher.waitForText(1000);
+        sampleServerLogLeecher.waitForText(1000);
+        jaegerExtLogLeecher.waitForText(1000);
 
         // Send requests to generate metrics
         int i = 0;
@@ -74,24 +81,30 @@ public class JaegerTracesTestCase extends BaseTestCase {
         }
         Thread.sleep(1000);
 
-        Assert.assertFalse(errorLogLeacher.isTextFound(), "Unexpected error log found");
+        Assert.assertFalse(errorLogLeecher.isTextFound(), "Unexpected error log found");
+        Assert.assertFalse(exceptionLogLeecher.isTextFound(), "Unexpected exception log found");
     }
 
     @Test
     public void testJaegerDisabled() throws Exception {
-        LogLeecher jaegerServerLogLeecher = new LogLeecher(
-                "ballerina: started publishing traces to Jaeger on localhost:5775");
-        serverInstance.addLogLeecher(jaegerServerLogLeecher);
-        LogLeecher errorLogLeacher = new LogLeecher("error");
-        serverInstance.addErrorLogLeecher(errorLogLeacher);
+        LogLeecher sampleServerLogLeecher = new LogLeecher(SAMPLE_SERVER_LOG);
+        serverInstance.addLogLeecher(sampleServerLogLeecher);
+        LogLeecher jaegerExtLogLeecher = new LogLeecher(JAEGER_EXTENSION_LOG_PREFIX + "localhost:5775");
+        serverInstance.addLogLeecher(jaegerExtLogLeecher);
+        LogLeecher errorLogLeecher = new LogLeecher("error");
+        serverInstance.addErrorLogLeecher(errorLogLeecher);
+        LogLeecher exceptionLogLeecher = new LogLeecher("Exception");
+        serverInstance.addErrorLogLeecher(exceptionLogLeecher);
 
         final String balFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), "01_http_svc_test.bal").toFile()
                 .getAbsolutePath();
         serverInstance.startServer(balFile, null, null, new int[] { 9091 });
+        sampleServerLogLeecher.waitForText(1000);
 
         String responseData = HttpClientRequest.doGet(TEST_RESOURCE_URL).getData();
         Assert.assertEquals(responseData, "Sum: 53");
-        Assert.assertFalse(jaegerServerLogLeecher.isTextFound(), "Jaeger extension not expected to start");
-        Assert.assertFalse(errorLogLeacher.isTextFound(), "Unexpected error log found");
+        Assert.assertFalse(jaegerExtLogLeecher.isTextFound(), "Prometheus extension not expected to enable");
+        Assert.assertFalse(errorLogLeecher.isTextFound(), "Unexpected error log found");
+        Assert.assertFalse(exceptionLogLeecher.isTextFound(), "Unexpected exception log found");
     }
 }
