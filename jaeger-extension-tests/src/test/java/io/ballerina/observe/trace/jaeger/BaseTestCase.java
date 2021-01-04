@@ -17,10 +17,16 @@
  */
 package io.ballerina.observe.trace.jaeger;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
+import com.github.dockerjava.core.DockerClientImpl;
+import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import org.ballerinalang.test.context.BalServer;
 import org.ballerinalang.test.context.BallerinaTestException;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
+
+import java.io.IOException;
 
 /**
  * Parent test class for all extension integration tests cases. This will provide basic
@@ -28,15 +34,25 @@ import org.testng.annotations.BeforeSuite;
  * by all the test cases throughout.
  */
 public class BaseTestCase {
+    public static final String JAEGER_IMAGE = "jaegertracing/all-in-one:1.18";
+
     static BalServer balServer;
+    static DockerClient dockerClient;
 
     @BeforeSuite(alwaysRun = true)
     public void initialize() throws BallerinaTestException {
         balServer = new BalServer();
+        DefaultDockerClientConfig dockerClientConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+        dockerClient = DockerClientImpl.getInstance(dockerClientConfig,
+                new ApacheDockerHttpClient.Builder()
+                        .dockerHost(dockerClientConfig.getDockerHost())
+                        .sslConfig(dockerClientConfig.getSSLConfig())
+                        .build());
     }
 
     @AfterSuite(alwaysRun = true)
-    public void destroy() {
+    public void destroy() throws IOException {
         balServer.cleanup();
+        dockerClient.close();
     }
 }

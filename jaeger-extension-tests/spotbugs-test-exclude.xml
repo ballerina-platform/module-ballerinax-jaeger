@@ -17,9 +17,12 @@
   ~
   -->
 <FindBugsFilter>
-    <!-- "balServer" field is kept static so that it will be available across Test Cases -->
+    <!-- "balServer", "dockerClient" fields are kept static so that it will be available across Test Cases -->
     <Match>
-        <Field name="balServer"/>
+        <Or>
+            <Field name="balServer"/>
+            <Field name="dockerClient"/>
+        </Or>
         <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"/>
     </Match>
 

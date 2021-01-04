@@ -33,6 +33,9 @@ dependencies {
     testImplementation "org.ballerinalang:ballerina-test-utils:${ballerinaLangVersion}"
     testImplementation "org.testng:testng:${testngVersion}"
     testImplementation "org.slf4j:slf4j-jdk14:${slf4jVersion}"
+    testImplementation "com.github.docker-java:docker-java-core:${dockerJavaVersion}"
+    testImplementation "com.github.docker-java:docker-java-transport-httpclient5:${dockerJavaVersion}"
+    testImplementation "com.google.code.gson:gson:${gsonVersion}"
 
     testUtils "org.ballerinalang:ballerina-test-utils:${ballerinaLangVersion}"
 }
