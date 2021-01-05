@@ -16,7 +16,7 @@
 
 import ballerina/java;
 
-# Extension class created by Jaeger TracerProvider
+# Extension class created by JaegerTracerProviderFactory.
 public class TracerProvider {
     # Handle Tracer Provider initialization.
     #
