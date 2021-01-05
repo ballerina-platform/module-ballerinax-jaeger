@@ -19,6 +19,7 @@ package io.ballerina.observe.trace.jaeger;
 
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.observability.tracer.spi.TracerProvider;
 import io.jaegertracing.Configuration;
 import io.jaegertracing.internal.samplers.ConstSampler;
@@ -66,7 +67,7 @@ public class JaegerTracerProvider implements TracerProvider {
      *
      * @return Error if initializing configurations fails
      */
-    public static Object initializeConfigurations() {
+    public static BError initializeConfigurations() {
         configRegistry = ConfigRegistry.getInstance();
         try {
             port = Integer.parseInt(

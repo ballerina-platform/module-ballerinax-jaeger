@@ -252,7 +252,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
     public void testJaegerDisabled() throws Exception {
         LogLeecher sampleServerLogLeecher = new LogLeecher(SAMPLE_SERVER_LOG);
         serverInstance.addLogLeecher(sampleServerLogLeecher);
-        LogLeecher jaegerExtLogLeecher = new LogLeecher(JAEGER_EXTENSION_LOG_PREFIX + "localhost:5775");
+        LogLeecher jaegerExtLogLeecher = new LogLeecher(JAEGER_EXTENSION_LOG_PREFIX);
         serverInstance.addLogLeecher(jaegerExtLogLeecher);
         LogLeecher errorLogLeecher = new LogLeecher("error");
         serverInstance.addErrorLogLeecher(errorLogLeecher);

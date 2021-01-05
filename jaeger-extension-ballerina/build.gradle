@@ -36,6 +36,7 @@ dependencies {
 
     externalJars "io.jaegertracing:jaeger-core:${jaegerVersion}"
     externalJars "io.jaegertracing:jaeger-thrift:${jaegerVersion}"
+    externalJars "io.opentracing:opentracing-noop:${openTracingVersion}"
     externalJars "org.apache.thrift:libthrift:${libThriftVersion}"
     externalJars "com.squareup.okhttp3:okhttp:${okHttpVersion}"
     externalJars "com.squareup.okio:okio:${okIoVersion}"
@@ -83,6 +84,7 @@ task updateTomlVerions {
         def stdlibDependentObserveVersion = project.stdlibObserveVersion.split("-")[0]
 
         def jaegerVersion = project.jaegerVersion
+        def openTracingVersion = project.openTracingVersion
         def libThriftVersion = project.libThriftVersion
         def okHttpVersion = project.okHttpVersion
         def okIoVersion = project.okIoVersion
@@ -94,6 +96,7 @@ task updateTomlVerions {
         newConfig = newConfig.replace("@stdlib.http.version@", stdlibDependentHttpVersion)
         newConfig = newConfig.replace("@stdlib.observe.version@", stdlibDependentObserveVersion)
         newConfig = newConfig.replace("@jaeger.version@", jaegerVersion)
+        newConfig = newConfig.replace("@opentracing.version@", openTracingVersion)
         newConfig = newConfig.replace("@libthrift.version@", libThriftVersion)
         newConfig = newConfig.replace("@okhttp.version@", okHttpVersion)
         newConfig = newConfig.replace("@okio.version@", okIoVersion)
