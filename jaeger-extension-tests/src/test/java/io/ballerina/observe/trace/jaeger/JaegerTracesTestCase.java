@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static io.ballerina.runtime.observability.ObservabilityConstants.CONFIG_TABLE_TRACING;
 import static io.ballerina.runtime.observability.ObservabilityConstants.CONFIG_TRACING_ENABLED;
 
 /**
@@ -109,14 +110,17 @@ public class JaegerTracesTestCase extends BaseTestCase {
         LogLeecher exceptionLogLeecher = new LogLeecher("Exception");
         serverInstance.addErrorLogLeecher(exceptionLogLeecher);
 
-        final List<String> runtimeArgs = new ArrayList<>(Collections.singletonList(
-                "--" + CONFIG_TRACING_ENABLED + "=true"));
+        final List<String> runtimeArgs = new ArrayList<>(Arrays.asList(
+                "--" + CONFIG_TRACING_ENABLED + "=true",
+                "--" + CONFIG_TABLE_TRACING + ".provider=jaeger"
+        ));
         runtimeArgs.addAll(Arrays.asList(additionalRuntimeArgs));
         final String balFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), "01_http_svc_test.bal").toFile()
                 .getAbsolutePath();
-        serverInstance.startServer(balFile, null, runtimeArgs.toArray(new String[0]), new int[] { 9091 });
-        sampleServerLogLeecher.waitForText(1000);
+        serverInstance.startServer(balFile, new String[]{"--observability-included"},
+                runtimeArgs.toArray(new String[0]), new int[] { 9091 });
         jaegerExtLogLeecher.waitForText(1000);
+        sampleServerLogLeecher.waitForText(1000);
 
         // Send requests to generate metrics
         long startTimeMicroseconds = Calendar.getInstance().getTimeInMillis() * 1000;
@@ -266,6 +270,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
         String responseData = HttpClientRequest.doGet(TEST_RESOURCE_URL).getData();
         Assert.assertEquals(responseData, "Sum: 53");
+
         Assert.assertFalse(jaegerExtLogLeecher.isTextFound(), "Jaeger extension not expected to enable");
         Assert.assertFalse(errorLogLeecher.isTextFound(), "Unexpected error log found");
         Assert.assertFalse(exceptionLogLeecher.isTextFound(), "Unexpected exception log found");
