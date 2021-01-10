@@ -5,6 +5,6 @@ module io.ballerina.observe.trace.extension.jaeger {
     requires opentracing.noop;
     requires jaeger.core;
 
-    provides io.ballerina.runtime.observability.tracer.spi.TracerProviderFactory
-            with io.ballerina.observe.trace.jaeger.JaegerTracerProviderFactory;
+    provides io.ballerina.runtime.observability.tracer.spi.TracerProvider
+            with io.ballerina.observe.trace.jaeger.JaegerTracerProvider;
 }

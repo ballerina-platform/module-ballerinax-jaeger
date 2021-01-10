@@ -67,24 +67,3 @@ publishing {
         }
     }
 }
-
-def tracerPropertiesFile = new File("${project.projectDir}/src/main/resources/jaeger-tracer.properties")
-def originalProperties = tracerPropertiesFile.text
-
-task updateReporterProperties {
-    doLast {
-        def tomlVersion = project.version.split("-")[0]
-
-        def newProperties = tracerPropertiesFile.text.replace("@toml.version@", tomlVersion)
-        tracerPropertiesFile.text = newProperties
-    }
-}
-
-task revertReporterProperties {
-    doLast {
-        tracerPropertiesFile.text = originalProperties
-    }
-}
-
-processResources.finalizedBy revertReporterProperties
-processResources.dependsOn updateReporterProperties

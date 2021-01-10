@@ -14,19 +14,4 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/java;
-
-# Extension class created by JaegerTracerProviderFactory.
-public class TracerProvider {
-    # Handle Tracer Provider initialization.
-    #
-    # + return - `()` if no error occurred, and an error otherwise
-    public function initialize() returns error? {
-        check externInitializeConfigurations();
-    }
-}
-
-function externInitializeConfigurations() returns error? = @java:Method {
-    'class: "io.ballerina.observe.trace.jaeger.JaegerTracerProvider",
-    name: "initializeConfigurations"
-} external;
+import ballerina/java as _;     // To allow packaging Java native code

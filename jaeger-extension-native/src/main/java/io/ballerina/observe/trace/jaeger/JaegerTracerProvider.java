@@ -19,7 +19,6 @@ package io.ballerina.observe.trace.jaeger;
 
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.utils.StringUtils;
-import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.observability.tracer.spi.TracerProvider;
 import io.jaegertracing.Configuration;
 import io.jaegertracing.internal.samplers.ConstSampler;
@@ -30,7 +29,6 @@ import io.opentracing.noop.NoopTracerFactory;
 import org.ballerinalang.config.ConfigRegistry;
 
 import java.io.PrintStream;
-import java.util.Objects;
 
 import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_REPORTER_FLUSH_INTERVAL;
 import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_REPORTER_HOSTNAME;
@@ -44,32 +42,32 @@ import static io.ballerina.observe.trace.jaeger.Constants.REPORTER_MAX_BUFFER_SP
 import static io.ballerina.observe.trace.jaeger.Constants.REPORTER_PORT_CONFIG;
 import static io.ballerina.observe.trace.jaeger.Constants.SAMPLER_PARAM_CONFIG;
 import static io.ballerina.observe.trace.jaeger.Constants.SAMPLER_TYPE_CONFIG;
+import static io.ballerina.observe.trace.jaeger.Constants.TRACER_NAME;
 
 /**
  * This is the Jaeger tracing extension class for {@link TracerProvider}.
  */
 public class JaegerTracerProvider implements TracerProvider {
 
-    private static ConfigRegistry configRegistry;
-    private static String hostname;
-    private static int port;
-    private static String samplerType;
-    private static Number samplerParam;
-    private static int reporterFlushInterval;
-    private static int reporterBufferSize;
+    private String hostname;
+    private int port;
+    private String samplerType;
+    private Number samplerParam;
+    private int reporterFlushInterval;
+    private int reporterBufferSize;
 
     private static final PrintStream console = System.out;
     private static final PrintStream consoleError = System.err;
 
-    /**
-     * Initialize Jaeger configurations.
-     * This is called by the TracerProvider ballerina object.
-     *
-     * @return Error if initializing configurations fails
-     */
-    public static BError initializeConfigurations() {
-        configRegistry = ConfigRegistry.getInstance();
+    @Override
+    public String getName() {
+        return TRACER_NAME;
+    }
+
+    @Override
+    public void init() {
         try {
+            ConfigRegistry configRegistry = ConfigRegistry.getInstance();
             port = Integer.parseInt(
                     configRegistry.getConfigOrDefault(REPORTER_PORT_CONFIG, String.valueOf(DEFAULT_REPORTER_PORT)));
             hostname = configRegistry.getConfigOrDefault(REPORTER_HOST_NAME_CONFIG, DEFAULT_REPORTER_HOSTNAME);
@@ -88,20 +86,14 @@ public class JaegerTracerProvider implements TracerProvider {
                     REPORTER_FLUSH_INTERVAL_MS_CONFIG, String.valueOf(DEFAULT_REPORTER_FLUSH_INTERVAL)));
             reporterBufferSize = Integer.parseInt(configRegistry.getConfigOrDefault
                     (REPORTER_MAX_BUFFER_SPANS_CONFIG, String.valueOf(DEFAULT_REPORTER_MAX_BUFFER_SPANS)));
-        } catch (IllegalArgumentException | ArithmeticException e) {
-            return ErrorCreator.createError(StringUtils.fromString("reading Jaeger configurations failed: "
-                    + e.getMessage()));
+        } catch (Throwable t) {
+            throw ErrorCreator.createError(StringUtils.fromString("invalid jaeger configurations"), t);
         }
         console.println("ballerina: started publishing traces to Jaeger on " + hostname + ":" + port);
-        return null;
     }
 
     @Override
     public Tracer getTracer(String serviceName) {
-        if (Objects.isNull(configRegistry)) {
-            throw new IllegalStateException("invalid Jaeger configurations");
-        }
-
         return new Configuration(serviceName)
                 .withSampler(new Configuration.SamplerConfiguration()
                         .withType(samplerType)
