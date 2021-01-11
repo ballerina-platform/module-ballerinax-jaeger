@@ -38,6 +38,12 @@ artifactId = "jaeger-thrift"
 version = "@jaeger.version@"
 
 [[platform.java11.dependency]]
+path = "./lib/opentracing-util-@opentracing.version@.jar"
+groupId = "io.opentracing"
+artifactId = "opentracing-util"
+version = "@opentracing.version@"
+
+[[platform.java11.dependency]]
 path = "./lib/opentracing-noop-@opentracing.version@.jar"
 groupId = "io.opentracing"
 artifactId = "opentracing-noop"

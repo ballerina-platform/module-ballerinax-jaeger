@@ -36,6 +36,7 @@ dependencies {
 
     externalJars "io.jaegertracing:jaeger-core:${jaegerVersion}"
     externalJars "io.jaegertracing:jaeger-thrift:${jaegerVersion}"
+    externalJars "io.opentracing:opentracing-util:${openTracingVersion}"
     externalJars "io.opentracing:opentracing-noop:${openTracingVersion}"
     externalJars "org.apache.thrift:libthrift:${libThriftVersion}"
     externalJars "com.squareup.okhttp3:okhttp:${okHttpVersion}"
