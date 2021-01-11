@@ -82,7 +82,6 @@ task updateTomlVerions {
         def stdlibDependentConfigVersion = project.stdlibConfigVersion.split("-")[0]
         def stdlibDependentStringUtilsVersion = project.stdlibStringutilsVersion.split("-")[0]
         def stdlibDependentHttpVersion = project.stdlibHttpVersion.split("-")[0]
-        def stdlibDependentObserveVersion = project.stdlibObserveVersion.split("-")[0]
 
         def jaegerVersion = project.jaegerVersion
         def openTracingVersion = project.openTracingVersion
@@ -95,7 +94,6 @@ task updateTomlVerions {
         newConfig = newConfig.replace("@stdlib.config.version@", stdlibDependentConfigVersion)
         newConfig = newConfig.replace("@stdlib.stringutils.version@", stdlibDependentStringUtilsVersion)
         newConfig = newConfig.replace("@stdlib.http.version@", stdlibDependentHttpVersion)
-        newConfig = newConfig.replace("@stdlib.observe.version@", stdlibDependentObserveVersion)
         newConfig = newConfig.replace("@jaeger.version@", jaegerVersion)
         newConfig = newConfig.replace("@opentracing.version@", openTracingVersion)
         newConfig = newConfig.replace("@libthrift.version@", libThriftVersion)
