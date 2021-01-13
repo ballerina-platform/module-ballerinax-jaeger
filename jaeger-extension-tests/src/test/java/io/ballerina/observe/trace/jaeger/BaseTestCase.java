@@ -27,6 +27,7 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Parent test class for all extension integration tests cases. This will provide basic
@@ -40,7 +41,7 @@ public class BaseTestCase {
     static DockerClient dockerClient;
 
     @BeforeSuite(alwaysRun = true)
-    public void initialize() throws BallerinaTestException {
+    public void initialize() throws BallerinaTestException, InterruptedException {
         balServer = new BalServer();
         DefaultDockerClientConfig dockerClientConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
         dockerClient = DockerClientImpl.getInstance(dockerClientConfig,
@@ -48,6 +49,9 @@ public class BaseTestCase {
                         .dockerHost(dockerClientConfig.getDockerHost())
                         .sslConfig(dockerClientConfig.getSSLConfig())
                         .build());
+        dockerClient.pullImageCmd(JAEGER_IMAGE)
+                .start()
+                .awaitCompletion(20, TimeUnit.SECONDS);
     }
 
     @AfterSuite(alwaysRun = true)
