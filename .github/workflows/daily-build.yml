@@ -15,8 +15,11 @@ jobs:
           java-version: 11
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      - name: Set Docker Host env variable
+        run: echo "DOCKER_HOST=$(docker context ls --format '{{print .DockerEndpoint}}' | tr -d '\n')" >> $GITHUB_ENV
       - name: Build with Gradle
         env:
+          DOCKER_HOST: unix:///var/run/docker.sock
           packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
           packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
         run: ./gradlew clean build --stacktrace --scan --console=plain --no-daemon
@@ -31,6 +34,8 @@ jobs:
           java-version: 11
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      - name: Set Docker Host env variable
+        run: echo "DOCKER_HOST=$(docker context ls --format '{{print .DockerEndpoint}}')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Build with Gradle
         env:
           packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}

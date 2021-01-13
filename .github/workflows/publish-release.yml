@@ -29,8 +29,11 @@ jobs:
           git commit -m "Move dependencies to stable version" || echo "No changes to commit"
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      - name: Set Docker Host env variable
+        run: echo "DOCKER_HOST=$(docker context ls --format '{{print .DockerEndpoint}}' | tr -d '\n')" >> $GITHUB_ENV
       - name: Publish artifact
         env:
+          DOCKER_HOST: unix:///var/run/docker.sock
           GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
           BALLERINA_CENTRAL_ACCESS_TOKEN: ${{ secrets.BALLERINA_CENTRAL_ACCESS_TOKEN }}
           packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
