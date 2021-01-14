@@ -78,17 +78,19 @@ public class JaegerTracesTestCase extends BaseTestCase {
     public Object[][] getTestJaegerMetricsData() {
         final String jaegerConfTable = "--b7a.observability.tracing.jaeger";
         return new Object[][]{
-                {"localhost:5775", new String[0]},
-                {"127.0.0.1:15775", new String[]{jaegerConfTable + ".reporter.hostname=127.0.0.1",
+                {"localhost", 5775, new String[0]},
+                {"127.0.0.1", 15775, new String[]{jaegerConfTable + ".reporter.hostname=127.0.0.1",
                         jaegerConfTable + ".reporter.port=15775"}}
         };
     }
 
     @Test(dataProvider = "test-jaeger-metrics-data")
-    public void testJaegerMetrics(String jaegerReportAddress, String[] additionalRuntimeArgs) throws Exception {
-        jaegerServer.startServer(jaegerReportAddress);
+    public void testJaegerMetrics(String host, int jaegerReportAddress, String[] additionalRuntimeArgs)
+            throws Exception {
+        jaegerServer.startServer(host, jaegerReportAddress);
 
-        LogLeecher jaegerExtLogLeecher = new LogLeecher(JAEGER_EXTENSION_LOG_PREFIX + jaegerReportAddress);
+        LogLeecher jaegerExtLogLeecher = new LogLeecher(JAEGER_EXTENSION_LOG_PREFIX + host + ":"
+                + jaegerReportAddress);
         serverInstance.addLogLeecher(jaegerExtLogLeecher);
         LogLeecher sampleServerLogLeecher = new LogLeecher(SAMPLE_SERVER_LOG);
         serverInstance.addLogLeecher(sampleServerLogLeecher);

@@ -25,6 +25,7 @@ import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * Container based Jaeger Server.
@@ -32,6 +33,7 @@ import java.util.concurrent.TimeUnit;
  * This is a Jaeger server implementation based on a linux Jaeger container.
  */
 public class ContainerizedJaegerServer implements JaegerServer {
+    private static final Logger LOGGER = Logger.getLogger(ContainerizedJaegerServer.class.getName());
     private static final String JAEGER_IMAGE = "jaegertracing/all-in-one:1.18";
 
     private DockerClient dockerClient;
@@ -50,7 +52,7 @@ public class ContainerizedJaegerServer implements JaegerServer {
     }
 
     @Override
-    public void startServer(String udpBindPort) {
+    public void startServer(String interfaceIP, int udpBindPort) {
         if (jaegerContainerId != null) {
             throw new IllegalStateException("Jaeger server already started");
         }
@@ -61,17 +63,19 @@ public class ContainerizedJaegerServer implements JaegerServer {
         jaegerContainerId = dockerClient.createContainerCmd(JAEGER_IMAGE)
                 .withName("ballerina-test-jaeger-" + System.currentTimeMillis())
                 .withHostConfig(HostConfig.newHostConfig()
-                        .withPortBindings(PortBinding.parse(udpBindPort + ":5775/udp"),
+                        .withPortBindings(PortBinding.parse(interfaceIP + ":" + udpBindPort + ":5775/udp"),
                                 PortBinding.parse("16686:16686/tcp")))
                 .exec()
                 .getId();
         dockerClient.startContainerCmd(jaegerContainerId).exec();
+        LOGGER.info("Started Jaeger container with container ID " + jaegerContainerId);
     }
 
     @Override
     public void stopServer() {
         if (jaegerContainerId != null) {
             dockerClient.stopContainerCmd(jaegerContainerId).exec();
+            LOGGER.info("Stopped Jaeger container with container ID " + jaegerContainerId);
             dockerClient.removeContainerCmd(jaegerContainerId).exec();
             jaegerContainerId = null;
         }

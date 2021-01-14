@@ -43,9 +43,4 @@ public class Constants {
     static final int DEFAULT_REPORTER_PORT = 5775;
     static final int DEFAULT_REPORTER_FLUSH_INTERVAL = 1000;
     static final int DEFAULT_REPORTER_MAX_BUFFER_SPANS = 10000;
-
-    static final String TRACER_PROPERTIES_FILE = "jaeger-tracer.properties";
-    static final String PACKAGE_VERSION_PROPERTY_KEY = "moduleVersion";
-    static final String PACKAGE_NAME = "jaeger";
-    static final String PACKAGE_ORG = "ballerinax";
 }

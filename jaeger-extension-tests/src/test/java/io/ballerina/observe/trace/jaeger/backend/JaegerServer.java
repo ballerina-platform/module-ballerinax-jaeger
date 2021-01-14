@@ -25,10 +25,11 @@ public interface JaegerServer {
     /**
      * Start the Jaeger server.
      *
-     * @param udpBindPort The UDP publishing port to bind to in the format <ip>:<port>
+     * @param interfaceIP The IP of the interface to bind to
+     * @param udpBindPort The UDP publishing port to bind to
      * @throws Exception if starting the server fails
      */
-    void startServer(String udpBindPort) throws Exception;
+    void startServer(String interfaceIP, int udpBindPort) throws Exception;
 
     /**
      * Stop the Jaeger server which had been started.

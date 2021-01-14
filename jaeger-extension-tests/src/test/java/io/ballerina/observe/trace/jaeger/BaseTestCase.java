@@ -19,14 +19,16 @@ package io.ballerina.observe.trace.jaeger;
 
 import io.ballerina.observe.trace.jaeger.backend.ContainerizedJaegerServer;
 import io.ballerina.observe.trace.jaeger.backend.JaegerServer;
+import io.ballerina.observe.trace.jaeger.backend.ProcessJaegerServer;
 import org.ballerinalang.test.context.BalServer;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 
 /**
- * Parent test class for all extension integration tests cases. This will provide basic
- * functionality for integration tests. This will initialize a single ballerina instance which will be used
- * by all the test cases throughout.
+ * Parent test class for all extension integration tests cases.
+ *
+ * This will provide basic functionality for integration tests.
+ * This will initialize a single ballerina instance which will be used by all the test cases throughout.
  */
 public class BaseTestCase {
     static BalServer balServer;
@@ -35,7 +37,11 @@ public class BaseTestCase {
     @BeforeSuite(alwaysRun = true)
     public void initialize() throws Exception {
         balServer = new BalServer();
-        jaegerServer = new ContainerizedJaegerServer();
+        if (System.getenv().containsKey(ProcessJaegerServer.EXECUTABLE_ENV_VAR_KEY)) {
+            jaegerServer = new ProcessJaegerServer();
+        } else {
+            jaegerServer = new ContainerizedJaegerServer();
+        }
     }
 
     @AfterSuite(alwaysRun = true)
