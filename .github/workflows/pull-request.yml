@@ -22,6 +22,7 @@ jobs:
         run: ./gradlew clean build --stacktrace --scan --console=plain --no-daemon
 
   windows-build:
+    if: 0 != 1  # Disabled Windows Build
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
