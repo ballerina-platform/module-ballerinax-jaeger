@@ -17,8 +17,6 @@
  */
 package io.ballerina.observe.trace.jaeger;
 
-import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.PortBinding;
 import com.google.gson.Gson;
 import io.ballerina.observe.trace.jaeger.model.JaegerProcess;
 import io.ballerina.observe.trace.jaeger.model.JaegerQueryResponse;
@@ -56,7 +54,6 @@ import static io.ballerina.runtime.observability.ObservabilityConstants.CONFIG_T
  */
 public class JaegerTracesTestCase extends BaseTestCase {
     private BServerInstance serverInstance;
-    private String jaegerContainerId;
 
     private static final File RESOURCES_DIR = Paths.get("src", "test", "resources", "bal").toFile();
     private static final String TEST_RESOURCE_URL = "http://localhost:9091/test/sum";
@@ -74,10 +71,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
     @AfterMethod
     public void cleanUpServer() throws Exception {
         serverInstance.shutdownServer();
-        if (jaegerContainerId != null) {
-            dockerClient.stopContainerCmd(jaegerContainerId).exec();
-            dockerClient.removeContainerCmd(jaegerContainerId).exec();
-        }
+        jaegerServer.stopServer();
     }
 
     @DataProvider(name = "test-jaeger-metrics-data")
@@ -92,14 +86,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
     @Test(dataProvider = "test-jaeger-metrics-data")
     public void testJaegerMetrics(String jaegerReportAddress, String[] additionalRuntimeArgs) throws Exception {
-        jaegerContainerId = dockerClient.createContainerCmd(JAEGER_IMAGE)
-                .withName("ballerina-test-jaeger-" + System.currentTimeMillis())
-                .withHostConfig(HostConfig.newHostConfig()
-                        .withPortBindings(PortBinding.parse(jaegerReportAddress + ":5775/udp"),
-                                PortBinding.parse("16686:16686/tcp")))
-                .exec()
-                .getId();
-        dockerClient.startContainerCmd(jaegerContainerId).exec();
+        jaegerServer.startServer(jaegerReportAddress);
 
         LogLeecher jaegerExtLogLeecher = new LogLeecher(JAEGER_EXTENSION_LOG_PREFIX + jaegerReportAddress);
         serverInstance.addLogLeecher(jaegerExtLogLeecher);
