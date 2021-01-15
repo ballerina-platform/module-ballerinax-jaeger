@@ -2,7 +2,7 @@ name: Daily Build
 
 on:
   schedule:
-    - cron:  '0 */12 * * *'
+    - cron:  '0 */8 * * *'
 
 jobs:
   ubuntu-build:
@@ -24,8 +24,8 @@ jobs:
         run: ./gradlew clean build --stacktrace --scan --console=plain --no-daemon
 
   windows-build:
-    if: 0 != 1  # Disabled Windows Build
     runs-on: windows-latest
+    if: 0 != 1  # Disabled Windows Build
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11

@@ -5,6 +5,7 @@ on: [push, pull_request]
 jobs:
   ubuntu-build:
     runs-on: ubuntu-latest
+    if: github.repository_owner != 'ballerina-platform'
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
@@ -22,8 +23,8 @@ jobs:
         run: ./gradlew clean build --stacktrace --scan --console=plain --no-daemon
 
   windows-build:
-    if: 0 != 1  # Disabled Windows Build
     runs-on: windows-latest
+    if: github.repository_owner != 'ballerina-platform'
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
