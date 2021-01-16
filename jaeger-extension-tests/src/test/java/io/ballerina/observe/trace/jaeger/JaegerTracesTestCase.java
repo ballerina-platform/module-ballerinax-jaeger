@@ -79,9 +79,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
     public Object[][] getTestJaegerMetricsData() {
         final String jaegerConfTable = "--b7a.observability.tracing.jaeger";
         return new Object[][]{
-                {"localhost", 5775, JaegerServerProtocol.ZIPKIN_COMPACT_THRIFT, new String[0]},
-                {"127.0.0.1", 15775, JaegerServerProtocol.ZIPKIN_COMPACT_THRIFT, new String[]{
-                        jaegerConfTable + ".reporter.hostname=127.0.0.1", jaegerConfTable + ".reporter.port=15775"}},
+                {"localhost", 6831, JaegerServerProtocol.JAEGER_COMPACT_THRIFT, new String[0]},
                 {"127.0.0.1", 6831, JaegerServerProtocol.JAEGER_COMPACT_THRIFT, new String[]{
                         jaegerConfTable + ".reporter.hostname=127.0.0.1", jaegerConfTable + ".reporter.port=6831"}}
         };

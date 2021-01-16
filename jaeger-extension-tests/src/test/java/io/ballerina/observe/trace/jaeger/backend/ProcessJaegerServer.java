@@ -54,9 +54,6 @@ public class ProcessJaegerServer implements JaegerServer {
         }
         String processorFlag;
         switch (protocol) {
-            case ZIPKIN_COMPACT_THRIFT:
-                processorFlag = "--processor.zipkin-compact.server-host-port";
-                break;
             case JAEGER_COMPACT_THRIFT:
                 processorFlag = "--processor.jaeger-compact.server-host-port";
                 break;

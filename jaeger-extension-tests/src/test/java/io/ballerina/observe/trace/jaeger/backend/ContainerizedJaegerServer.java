@@ -63,9 +63,6 @@ public class ContainerizedJaegerServer implements JaegerServer {
         }
         int targetPort;
         switch (protocol) {
-            case ZIPKIN_COMPACT_THRIFT:
-                targetPort = 5775;
-                break;
             case JAEGER_COMPACT_THRIFT:
                 targetPort = 6831;
                 break;

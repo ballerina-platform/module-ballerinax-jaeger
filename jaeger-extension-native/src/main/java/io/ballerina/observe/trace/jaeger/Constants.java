@@ -40,7 +40,7 @@ public class Constants {
     static final String DEFAULT_SAMPLER_TYPE = "const";
     static final int DEFAULT_SAMPLER_PARAM = 1;
     static final String DEFAULT_REPORTER_HOSTNAME = "localhost";
-    static final int DEFAULT_REPORTER_PORT = 5775;
+    static final int DEFAULT_REPORTER_PORT = 6831;
     static final int DEFAULT_REPORTER_FLUSH_INTERVAL = 1000;
     static final int DEFAULT_REPORTER_MAX_BUFFER_SPANS = 10000;
 }
