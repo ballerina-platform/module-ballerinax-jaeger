@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
 
 import static io.ballerina.runtime.observability.ObservabilityConstants.CONFIG_TABLE_TRACING;
 import static io.ballerina.runtime.observability.ObservabilityConstants.CONFIG_TRACING_ENABLED;
+import static io.ballerina.runtime.observability.ObservabilityConstants.UNKNOWN_SERVICE;
 
 /**
  * Integration test for Jaeger extension.
@@ -79,8 +80,8 @@ public class JaegerTracesTestCase extends BaseTestCase {
     public Object[][] getTestJaegerMetricsData() {
         final String jaegerConfTable = "--b7a.observability.tracing.jaeger";
         return new Object[][]{
-                {"localhost", 6831, JaegerServerProtocol.JAEGER_COMPACT_THRIFT, new String[0]},
-                {"127.0.0.1", 6831, JaegerServerProtocol.JAEGER_COMPACT_THRIFT, new String[]{
+                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, new String[0]},
+                {"127.0.0.1", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, new String[]{
                         jaegerConfTable + ".reporter.hostname=127.0.0.1", jaegerConfTable + ".reporter.port=6831"}}
         };
     }
@@ -129,8 +130,9 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
         List<String> servicesQueryResponseData = servicesQueryResponse.getData();
         Assert.assertNotNull(servicesQueryResponseData);
-        Assert.assertEquals(servicesQueryResponseData.size(), 1);
-        Assert.assertEquals(servicesQueryResponseData.get(0), SAMPLE_SERVER_NAME);
+        Assert.assertEquals(servicesQueryResponseData.size(), 2);
+        Assert.assertEquals(new HashSet<>(servicesQueryResponseData),
+                new HashSet<>(Arrays.asList(SAMPLE_SERVER_NAME, UNKNOWN_SERVICE)));
 
         // Read traces from Jaeger query endpoint
         HttpResponse tracesQueryHttpResponse = HttpClientRequest.doGet("http://localhost:16686/api/traces?end="
@@ -149,9 +151,9 @@ public class JaegerTracesTestCase extends BaseTestCase {
         Assert.assertEquals(jaegerTrace.getSpans().size(), 3);
         Assert.assertEquals(jaegerTrace.getProcesses().size(), 1);
 
-        String span1Position = "01_http_svc_test.bal:21:5";
-        JaegerSpan span1 = findSpan(jaegerTrace, "01_http_svc_test.bal:21:5");
-        Assert.assertNotNull(span1);
+        String span1Position = "01_http_svc_test.bal:22:5";
+        JaegerSpan span1 = findSpan(jaegerTrace, span1Position);
+        Assert.assertNotNull(span1, "Span from position " + span1Position + " not found");
         Assert.assertEquals(span1.getOperationName(), "get /sum");
         Assert.assertEquals(span1.getReferences().size(), 0);
         Assert.assertEquals(span1.getProcessID(), JAEGER_PROCESS_ID);
@@ -168,19 +170,19 @@ public class JaegerTracesTestCase extends BaseTestCase {
                 new JaegerTag("sampler.param", "bool", "true"),
                 new JaegerTag("http.url", "string", "/test/sum"),
                 new JaegerTag("src.resource.accessor", "string", "get"),
-                new JaegerTag("entrypoint.function.position", "string", "01_http_svc_test.bal:21:5"),
+                new JaegerTag("entrypoint.function.position", "string", span1Position),
                 new JaegerTag("protocol", "string", "http"),
                 new JaegerTag("src.service.resource", "string", "true"),
                 new JaegerTag("span.kind", "string", "server"),
-                new JaegerTag("src.position", "string", "01_http_svc_test.bal:21:5"),
+                new JaegerTag("src.position", "string", span1Position),
                 new JaegerTag("src.resource.path", "string", "/sum"),
                 new JaegerTag("http.method", "string", "GET"),
                 new JaegerTag("internal.span.format", "string", "proto")
         )));
 
-        String span2Position = "01_http_svc_test.bal:23:19";
+        String span2Position = "01_http_svc_test.bal:24:19";
         JaegerSpan span2 = findSpan(jaegerTrace, span2Position);
-        Assert.assertNotNull(span2);
+        Assert.assertNotNull(span2, "Span from position " + span2Position + " not found");
         Assert.assertEquals(span2.getOperationName(), "$anon/./ObservableAdder:getSum");
         Assert.assertEquals(span2.getReferences().size(), 1);
         Assert.assertEquals(span2.getReferences().get(0).getRefType(), "CHILD_OF");
@@ -192,19 +194,19 @@ public class JaegerTracesTestCase extends BaseTestCase {
         Assert.assertTrue(span2.getDuration() < endTimeMicroseconds - startTimeMicroseconds,
                 "span with position ID \"" + span2Position + "\" duration not between start and end time");
         Assert.assertEquals(span2.getTags(), new HashSet<>(Arrays.asList(
-                new JaegerTag("entrypoint.function.position", "string", "01_http_svc_test.bal:21:5"),
+                new JaegerTag("entrypoint.function.position", "string", span1Position),
                 new JaegerTag("src.module", "string", "$anon/.:0.0.0"),
                 new JaegerTag("span.kind", "string", "client"),
                 new JaegerTag("src.object.name", "string", "$anon/./ObservableAdder"),
                 new JaegerTag("entrypoint.function.module", "string", "$anon/.:0.0.0"),
-                new JaegerTag("src.position", "string", "01_http_svc_test.bal:23:19"),
+                new JaegerTag("src.position", "string", span2Position),
                 new JaegerTag("src.function.name", "string", "getSum"),
                 new JaegerTag("internal.span.format", "string", "proto")
         )));
 
-        String span3Position = "01_http_svc_test.bal:27:20";
+        String span3Position = "01_http_svc_test.bal:28:20";
         JaegerSpan span3 = findSpan(jaegerTrace, span3Position);
-        Assert.assertNotNull(span3);
+        Assert.assertNotNull(span3, "Span from position " + span3Position + " not found");
         Assert.assertEquals(span3.getOperationName(), "ballerina/http/Caller:respond");
         Assert.assertEquals(span3.getReferences().size(), 1);
         Assert.assertEquals(span3.getReferences().get(0).getRefType(), "CHILD_OF");
@@ -217,12 +219,12 @@ public class JaegerTracesTestCase extends BaseTestCase {
                 "span with position ID \"" + span3Position + "\" duration not between start and end time");
         Assert.assertEquals(span3.getTags(), new HashSet<>(Arrays.asList(
                 new JaegerTag("http.status_code", "string", "200"),
-                new JaegerTag("entrypoint.function.position", "string", "01_http_svc_test.bal:21:5"),
+                new JaegerTag("entrypoint.function.position", "string", span1Position),
                 new JaegerTag("src.module", "string", "$anon/.:0.0.0"),
                 new JaegerTag("span.kind", "string", "client"),
                 new JaegerTag("src.object.name", "string", "ballerina/http/Caller"),
                 new JaegerTag("entrypoint.function.module", "string", "$anon/.:0.0.0"),
-                new JaegerTag("src.position", "string", "01_http_svc_test.bal:27:20"),
+                new JaegerTag("src.position", "string", span3Position),
                 new JaegerTag("src.client.remote", "string", "true"),
                 new JaegerTag("src.function.name", "string", "respond"),
                 new JaegerTag("internal.span.format", "string", "proto")

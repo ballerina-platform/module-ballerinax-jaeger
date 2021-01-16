@@ -48,16 +48,11 @@ import static io.ballerina.observe.trace.jaeger.Constants.TRACER_NAME;
  * This is the Jaeger tracing extension class for {@link TracerProvider}.
  */
 public class JaegerTracerProvider implements TracerProvider {
-
-    private String hostname;
-    private int port;
-    private String samplerType;
-    private Number samplerParam;
-    private int reporterFlushInterval;
-    private int reporterBufferSize;
-
     private static final PrintStream console = System.out;
     private static final PrintStream consoleError = System.err;
+
+    private Configuration.SamplerConfiguration samplerConfiguration;
+    private Configuration.ReporterConfiguration reporterConfiguration;
 
     @Override
     public String getName() {
@@ -66,26 +61,42 @@ public class JaegerTracerProvider implements TracerProvider {
 
     @Override
     public void init() {
+        String hostname;
+        int port;
         try {
             ConfigRegistry configRegistry = ConfigRegistry.getInstance();
-            port = Integer.parseInt(
-                    configRegistry.getConfigOrDefault(REPORTER_PORT_CONFIG, String.valueOf(DEFAULT_REPORTER_PORT)));
-            hostname = configRegistry.getConfigOrDefault(REPORTER_HOST_NAME_CONFIG, DEFAULT_REPORTER_HOSTNAME);
 
-            samplerType = configRegistry.getConfigOrDefault(SAMPLER_TYPE_CONFIG, DEFAULT_SAMPLER_TYPE);
+            // Create Sampler Configuration
+            String samplerType = configRegistry.getConfigOrDefault(SAMPLER_TYPE_CONFIG, DEFAULT_SAMPLER_TYPE);
             if (!(samplerType.equals(ConstSampler.TYPE) || samplerType.equals(RateLimitingSampler.TYPE)
                     || samplerType.equals(ProbabilisticSampler.TYPE))) {
                 consoleError.println("error: invalid Jaeger configuration sampler type: " + samplerType
                         + " invalid. using default const sampling");
                 samplerType = DEFAULT_SAMPLER_TYPE;
             }
-
-            samplerParam = Float.valueOf(
+            Number samplerParam = Float.valueOf(
                     configRegistry.getConfigOrDefault(SAMPLER_PARAM_CONFIG, String.valueOf(DEFAULT_SAMPLER_PARAM)));
-            reporterFlushInterval = Integer.parseInt(configRegistry.getConfigOrDefault(
+            samplerConfiguration = new Configuration.SamplerConfiguration()
+                    .withType(samplerType)
+                    .withParam(samplerParam);
+
+            // Create Sender Configuration
+            hostname = configRegistry.getConfigOrDefault(REPORTER_HOST_NAME_CONFIG, DEFAULT_REPORTER_HOSTNAME);
+            port = Integer.parseInt(
+                    configRegistry.getConfigOrDefault(REPORTER_PORT_CONFIG, String.valueOf(DEFAULT_REPORTER_PORT)));
+            Configuration.SenderConfiguration senderConfiguration = new Configuration.SenderConfiguration()
+                    .withAgentHost(hostname)
+                    .withAgentPort(port);
+
+            // Create Reporter Configuration
+            int reporterFlushInterval = Integer.parseInt(configRegistry.getConfigOrDefault(
                     REPORTER_FLUSH_INTERVAL_MS_CONFIG, String.valueOf(DEFAULT_REPORTER_FLUSH_INTERVAL)));
-            reporterBufferSize = Integer.parseInt(configRegistry.getConfigOrDefault
-                    (REPORTER_MAX_BUFFER_SPANS_CONFIG, String.valueOf(DEFAULT_REPORTER_MAX_BUFFER_SPANS)));
+            int reporterBufferSize = Integer.parseInt(configRegistry.getConfigOrDefault(
+                    REPORTER_MAX_BUFFER_SPANS_CONFIG, String.valueOf(DEFAULT_REPORTER_MAX_BUFFER_SPANS)));
+            reporterConfiguration = new Configuration.ReporterConfiguration()
+                    .withSender(senderConfiguration)
+                    .withFlushInterval(reporterFlushInterval)
+                    .withMaxQueueSize(reporterBufferSize);
         } catch (Throwable t) {
             throw ErrorCreator.createError(StringUtils.fromString("invalid jaeger configurations"), t);
         }
@@ -95,16 +106,8 @@ public class JaegerTracerProvider implements TracerProvider {
     @Override
     public Tracer getTracer(String serviceName) {
         return new Configuration(serviceName)
-                .withSampler(new Configuration.SamplerConfiguration()
-                        .withType(samplerType)
-                        .withParam(samplerParam))
-                .withReporter(new Configuration.ReporterConfiguration()
-                        .withLogSpans(Boolean.FALSE)
-                        .withSender(new Configuration.SenderConfiguration()
-                                .withAgentHost(hostname)
-                                .withAgentPort(port))
-                        .withFlushInterval(reporterFlushInterval)
-                        .withMaxQueueSize(reporterBufferSize))
+                .withSampler(samplerConfiguration)
+                .withReporter(reporterConfiguration)
                 .getTracerBuilder()
                 .withScopeManager(NoopTracerFactory.create().scopeManager())
                 .build();

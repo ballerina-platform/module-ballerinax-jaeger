@@ -54,7 +54,7 @@ public class ProcessJaegerServer implements JaegerServer {
         }
         String processorFlag;
         switch (protocol) {
-            case JAEGER_COMPACT_THRIFT:
+            case UDP_COMPACT_THRIFT:
                 processorFlag = "--processor.jaeger-compact.server-host-port";
                 break;
             default:
@@ -66,8 +66,8 @@ public class ProcessJaegerServer implements JaegerServer {
                 .start();
         LOGGER.info("Started Jaeger process with process ID " + jaegerServerProcess.pid());
 
-        processOutputLogReader = new ProcessLogReader("JaegerServer", jaegerServerProcess.getInputStream());
-        processErrorLogReader = new ProcessLogReader("JaegerServer", jaegerServerProcess.getErrorStream());
+        processOutputLogReader = new ProcessLogReader("ProcessJaegerServer", jaegerServerProcess.getInputStream());
+        processErrorLogReader = new ProcessLogReader("ProcessJaegerServer", jaegerServerProcess.getErrorStream());
     }
 
     @Override

@@ -63,7 +63,7 @@ public class ContainerizedJaegerServer implements JaegerServer {
         }
         int targetPort;
         switch (protocol) {
-            case JAEGER_COMPACT_THRIFT:
+            case UDP_COMPACT_THRIFT:
                 targetPort = 6831;
                 break;
             default:
