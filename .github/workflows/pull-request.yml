@@ -33,7 +33,7 @@ jobs:
         run: chmod +x gradlew
       - name: Download Jaeger server executable
         env:
-          JAEGER_VERSION: 1.18.0
+          JAEGER_VERSION: 1.21.0
         run: |
           Invoke-WebRequest https://github.com/jaegertracing/jaeger/releases/download/v$env:JAEGER_VERSION/jaeger-$env:JAEGER_VERSION-windows-amd64.tar.gz -O jaeger.tar.gz
           tar -xzvf jaeger.tar.gz

@@ -35,7 +35,7 @@ import java.util.logging.Logger;
  */
 public class ContainerizedJaegerServer implements JaegerServer {
     private static final Logger LOGGER = Logger.getLogger(ContainerizedJaegerServer.class.getName());
-    private static final String JAEGER_IMAGE = "jaegertracing/all-in-one:1.18";
+    private static final String JAEGER_IMAGE = "jaegertracing/all-in-one:1.21.0";
 
     private DockerClient dockerClient;
     private String jaegerContainerId;
