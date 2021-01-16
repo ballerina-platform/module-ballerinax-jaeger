@@ -53,7 +53,7 @@ public class ContainerizedJaegerServer implements JaegerServer {
     }
 
     @Override
-    public void startServer(String interfaceIP, int udpBindPort) {
+    public void startServer(String interfaceIP, int udpBindPort, JaegerServerProtocol protocol) {
         if (jaegerContainerId != null) {
             throw new IllegalStateException("Jaeger server already started");
         }
@@ -61,11 +61,22 @@ public class ContainerizedJaegerServer implements JaegerServer {
             throw new IllegalStateException("Containerized Jaeger server cannot be started after " +
                     "cleaning up docker client");
         }
+        int targetPort;
+        switch (protocol) {
+            case ZIPKIN_COMPACT_THRIFT:
+                targetPort = 5775;
+                break;
+            case JAEGER_COMPACT_THRIFT:
+                targetPort = 6831;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown Jaeger Protocol type " + protocol);
+        }
         jaegerContainerId = dockerClient.createContainerCmd(JAEGER_IMAGE)
                 .withName("ballerina-test-jaeger-" + System.currentTimeMillis())
                 .withHostConfig(HostConfig.newHostConfig()
-                        .withPortBindings(PortBinding.parse(interfaceIP + ":" + udpBindPort + ":5775/udp"),
-                                PortBinding.parse("16686:16686/tcp")))
+                        .withPortBindings(PortBinding.parse("16686:16686/tcp"),
+                                PortBinding.parse(interfaceIP + ":" + udpBindPort + ":" + targetPort + "/udp")))
                 .exec()
                 .getId();
         dockerClient.startContainerCmd(jaegerContainerId).exec();

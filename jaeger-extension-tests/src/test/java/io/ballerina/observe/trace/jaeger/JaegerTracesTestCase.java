@@ -18,6 +18,7 @@
 package io.ballerina.observe.trace.jaeger;
 
 import com.google.gson.Gson;
+import io.ballerina.observe.trace.jaeger.backend.JaegerServerProtocol;
 import io.ballerina.observe.trace.jaeger.model.JaegerProcess;
 import io.ballerina.observe.trace.jaeger.model.JaegerQueryResponse;
 import io.ballerina.observe.trace.jaeger.model.JaegerQueryResponseTypeToken;
@@ -78,16 +79,19 @@ public class JaegerTracesTestCase extends BaseTestCase {
     public Object[][] getTestJaegerMetricsData() {
         final String jaegerConfTable = "--b7a.observability.tracing.jaeger";
         return new Object[][]{
-                {"localhost", 5775, new String[0]},
-                {"127.0.0.1", 15775, new String[]{jaegerConfTable + ".reporter.hostname=127.0.0.1",
-                        jaegerConfTable + ".reporter.port=15775"}}
+                {"localhost", 5775, JaegerServerProtocol.ZIPKIN_COMPACT_THRIFT, new String[0]},
+                {"127.0.0.1", 15775, JaegerServerProtocol.ZIPKIN_COMPACT_THRIFT, new String[]{
+                        jaegerConfTable + ".reporter.hostname=127.0.0.1", jaegerConfTable + ".reporter.port=15775"}},
+                {"127.0.0.1", 6831, JaegerServerProtocol.JAEGER_COMPACT_THRIFT, new String[]{
+                        jaegerConfTable + ".reporter.hostname=127.0.0.1", jaegerConfTable + ".reporter.port=6831"}}
         };
     }
 
     @Test(dataProvider = "test-jaeger-metrics-data")
-    public void testJaegerMetrics(String host, int jaegerReportAddress, String[] additionalRuntimeArgs)
+    public void testJaegerMetrics(String host, int jaegerReportAddress, JaegerServerProtocol jaegerReportProtocol,
+                                  String[] additionalRuntimeArgs)
             throws Exception {
-        jaegerServer.startServer(host, jaegerReportAddress);
+        jaegerServer.startServer(host, jaegerReportAddress, jaegerReportProtocol);
 
         LogLeecher jaegerExtLogLeecher = new LogLeecher(JAEGER_EXTENSION_LOG_PREFIX + host + ":"
                 + jaegerReportAddress);

@@ -27,9 +27,10 @@ public interface JaegerServer {
      *
      * @param interfaceIP The IP of the interface to bind to
      * @param udpBindPort The UDP publishing port to bind to
+     * @param protocol    The protocol to be used in the port
      * @throws Exception if starting the server fails
      */
-    void startServer(String interfaceIP, int udpBindPort) throws Exception;
+    void startServer(String interfaceIP, int udpBindPort, JaegerServerProtocol protocol) throws Exception;
 
     /**
      * Stop the Jaeger server which had been started.
@@ -39,7 +40,7 @@ public interface JaegerServer {
     void stopServer() throws Exception;
 
     /**
-     * Cleanup the server and all related resouces.
+     * Cleanup the server and all related resources.
      *
      * @throws Exception if cleanup fails
      */

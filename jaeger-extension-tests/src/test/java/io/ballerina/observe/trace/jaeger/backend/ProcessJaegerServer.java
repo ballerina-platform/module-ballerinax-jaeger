@@ -48,13 +48,24 @@ public class ProcessJaegerServer implements JaegerServer {
     }
 
     @Override
-    public void startServer(String interfaceIP, int udpBindPort) throws IOException {
+    public void startServer(String interfaceIP, int udpBindPort, JaegerServerProtocol protocol) throws IOException {
         if (jaegerServerProcess != null || processOutputLogReader != null || processErrorLogReader != null) {
             throw new IllegalStateException("Jaeger server already started");
         }
+        String processorFlag;
+        switch (protocol) {
+            case ZIPKIN_COMPACT_THRIFT:
+                processorFlag = "--processor.zipkin-compact.server-host-port";
+                break;
+            case JAEGER_COMPACT_THRIFT:
+                processorFlag = "--processor.jaeger-compact.server-host-port";
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown Jaeger Protocol type " + protocol);
+        }
         String bindPort = interfaceIP + ":" + udpBindPort;
         jaegerServerProcess = new ProcessBuilder()
-                .command(executableFile, "--processor.zipkin-compact.server-host-port", bindPort)
+                .command(executableFile, processorFlag, bindPort)
                 .start();
         LOGGER.info("Started Jaeger process with process ID " + jaegerServerProcess.pid());
 
