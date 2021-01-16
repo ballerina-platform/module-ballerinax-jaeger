@@ -17,9 +17,9 @@
  */
 package io.ballerina.observe.trace.jaeger.backend;
 
-import org.ballerinalang.test.context.Utils;
-
 import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -33,6 +33,8 @@ public class ProcessJaegerServer implements JaegerServer {
 
     private final String executableFile;
     private Process jaegerServerProcess;
+    private ProcessLogReader processOutputLogReader;
+    private ProcessLogReader processErrorLogReader;
 
     public ProcessJaegerServer() {
         executableFile = System.getenv(EXECUTABLE_ENV_VAR_KEY);
@@ -46,25 +48,33 @@ public class ProcessJaegerServer implements JaegerServer {
     }
 
     @Override
-    public void startServer(String interfaceIP, int udpBindPort) throws Exception {
-        if (jaegerServerProcess != null) {
+    public void startServer(String interfaceIP, int udpBindPort) throws IOException {
+        if (jaegerServerProcess != null || processOutputLogReader != null || processErrorLogReader != null) {
             throw new IllegalStateException("Jaeger server already started");
         }
+        String bindPort = interfaceIP + ":" + udpBindPort;
         jaegerServerProcess = new ProcessBuilder()
-                .command(executableFile, "--collector.zipkin.http-port=9411",
-                        "--processor.zipkin-compact.server-host-port=5775")
+                .command(executableFile, "--processor.zipkin-compact.server-host-port", bindPort)
                 .start();
-        Utils.waitForPortsToOpen(new int[]{udpBindPort}, 30000, true, interfaceIP);
         LOGGER.info("Started Jaeger process with process ID " + jaegerServerProcess.pid());
+
+        processOutputLogReader = new ProcessLogReader("JaegerServer", jaegerServerProcess.getInputStream());
+        processErrorLogReader = new ProcessLogReader("JaegerServer", jaegerServerProcess.getErrorStream());
     }
 
     @Override
-    public void stopServer() {
+    public void stopServer() throws Exception {
         if (jaegerServerProcess != null) {
             long processID = jaegerServerProcess.pid();
+            processOutputLogReader.close();
+            processErrorLogReader.close();
             jaegerServerProcess.destroy();
+            jaegerServerProcess.waitFor(10000, TimeUnit.SECONDS);
             LOGGER.info("Stopped Jaeger process with process ID " + processID);
+
             jaegerServerProcess = null;
+            processOutputLogReader = null;
+            processErrorLogReader = null;
         }
     }
 

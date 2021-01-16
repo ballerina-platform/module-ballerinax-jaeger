@@ -24,6 +24,7 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -82,7 +83,7 @@ public class ContainerizedJaegerServer implements JaegerServer {
     }
 
     @Override
-    public void cleanUp() throws Exception {
+    public void cleanUp() throws IOException {
         dockerClient.close();
         dockerClient = null;
     }
