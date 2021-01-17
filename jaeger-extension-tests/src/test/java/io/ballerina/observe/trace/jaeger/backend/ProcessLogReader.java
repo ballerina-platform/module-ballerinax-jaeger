@@ -30,14 +30,13 @@ import java.util.concurrent.TimeUnit;
  * Log Reader which reads and prints the output of a Process.
  */
 public final class ProcessLogReader implements Runnable, AutoCloseable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessLogReader.class);
     private final InputStream inputStream;
-    private final Logger logger;
     private final Thread workerThread;
     private boolean isRunning;
 
-    public ProcessLogReader(String name, InputStream inputStream) {
+    public ProcessLogReader(InputStream inputStream) {
         this.inputStream = inputStream;
-        logger = LoggerFactory.getLogger(ProcessLogReader.class.getName() + " - " + name);
         isRunning = true;
         workerThread = new Thread(this);
         workerThread.start();
@@ -53,17 +52,17 @@ public final class ProcessLogReader implements Runnable, AutoCloseable {
                     if (s == null) {
                         break;
                     }
-                    logger.info(s);
+                    LOGGER.info(s);
                 } else {
                     TimeUnit.SECONDS.sleep(1);
                 }
             }
             String s = bufferedReader.readLine();
             if (s != null) {
-                logger.info(s);
+                LOGGER.info(s);
             }
         } catch (Throwable t) {
-            logger.error("Problem reading process output stream", t);
+            LOGGER.error("Problem reading process output stream", t);
         }
     }
 

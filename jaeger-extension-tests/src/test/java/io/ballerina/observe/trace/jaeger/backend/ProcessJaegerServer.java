@@ -17,10 +17,12 @@
  */
 package io.ballerina.observe.trace.jaeger.backend;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 /**
  * Executable program based Jaeger server.
@@ -28,7 +30,7 @@ import java.util.logging.Logger;
  * This starts and stops the server using scripts. The script paths need to be provided as environment variables.
  */
 public class ProcessJaegerServer implements JaegerServer {
-    private static final Logger LOGGER = Logger.getLogger(ContainerizedJaegerServer.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessJaegerServer.class);
     public static final String EXECUTABLE_ENV_VAR_KEY = "JAEGER_SERVER_EXECUTABLE";
 
     private final String executableFile;
@@ -66,8 +68,8 @@ public class ProcessJaegerServer implements JaegerServer {
                 .start();
         LOGGER.info("Started Jaeger process with process ID " + jaegerServerProcess.pid());
 
-        processOutputLogReader = new ProcessLogReader("ProcessJaegerServer", jaegerServerProcess.getInputStream());
-        processErrorLogReader = new ProcessLogReader("ProcessJaegerServer", jaegerServerProcess.getErrorStream());
+        processOutputLogReader = new ProcessLogReader(jaegerServerProcess.getInputStream());
+        processErrorLogReader = new ProcessLogReader(jaegerServerProcess.getErrorStream());
     }
 
     @Override

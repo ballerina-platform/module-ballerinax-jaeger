@@ -23,10 +23,11 @@ import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 /**
  * Container based Jaeger Server.
@@ -34,7 +35,7 @@ import java.util.logging.Logger;
  * This is a Jaeger server implementation based on a linux Jaeger container.
  */
 public class ContainerizedJaegerServer implements JaegerServer {
-    private static final Logger LOGGER = Logger.getLogger(ContainerizedJaegerServer.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContainerizedJaegerServer.class);
     private static final String JAEGER_IMAGE = "jaegertracing/all-in-one:1.21.0";
 
     private DockerClient dockerClient;
@@ -77,6 +78,11 @@ public class ContainerizedJaegerServer implements JaegerServer {
                 .exec()
                 .getId();
         dockerClient.startContainerCmd(jaegerContainerId).exec();
+        dockerClient.logContainerCmd(jaegerContainerId)
+                .withStdOut(true)
+                .withStdErr(true)
+                .withFollowStream(true)
+                .exec(new ContainerLogReader());
         LOGGER.info("Started Jaeger container with container ID " + jaegerContainerId);
     }
 
