@@ -29,18 +29,30 @@ public class Constants {
 
     static final String TRACER_NAME = "jaeger";
 
+    /*
+     * Configuration Keys.
+     */
+
     private static final String JAEGER_CONFIG_TABLE = CONFIG_TABLE_TRACING + ".jaeger";
     static final String SAMPLER_TYPE_CONFIG = JAEGER_CONFIG_TABLE + ".sampler.type";
     static final String SAMPLER_PARAM_CONFIG = JAEGER_CONFIG_TABLE + ".sampler.param";
-    static final String REPORTER_HOST_NAME_CONFIG = JAEGER_CONFIG_TABLE + ".reporter.hostname";
-    static final String REPORTER_PORT_CONFIG = JAEGER_CONFIG_TABLE + ".reporter.port";
+
     static final String REPORTER_FLUSH_INTERVAL_MS_CONFIG = JAEGER_CONFIG_TABLE + ".reporter.flush.interval.ms";
     static final String REPORTER_MAX_BUFFER_SPANS_CONFIG = JAEGER_CONFIG_TABLE + ".reporter.max.buffer.spans";
 
+    static final String REPORTER_AGENT_HOSTNAME_CONFIG = JAEGER_CONFIG_TABLE + ".reporter.agent.hostname";
+    static final String REPORTER_AGENT_PORT_CONFIG = JAEGER_CONFIG_TABLE + ".reporter.agent.port";
+
+    /*
+     * Configuration Default Values.
+     */
+
     static final String DEFAULT_SAMPLER_TYPE = "const";
     static final int DEFAULT_SAMPLER_PARAM = 1;
-    static final String DEFAULT_REPORTER_HOSTNAME = "localhost";
-    static final int DEFAULT_REPORTER_PORT = 6831;
+
     static final int DEFAULT_REPORTER_FLUSH_INTERVAL = 1000;
     static final int DEFAULT_REPORTER_MAX_BUFFER_SPANS = 10000;
+
+    static final String DEFAULT_REPORTER_AGENT_HOSTNAME = "localhost";
+    static final int DEFAULT_REPORTER_AGENT_PORT = 6831;
 }

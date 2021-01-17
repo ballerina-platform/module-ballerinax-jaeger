@@ -30,16 +30,16 @@ import org.ballerinalang.config.ConfigRegistry;
 
 import java.io.PrintStream;
 
+import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_REPORTER_AGENT_HOSTNAME;
+import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_REPORTER_AGENT_PORT;
 import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_REPORTER_FLUSH_INTERVAL;
-import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_REPORTER_HOSTNAME;
 import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_REPORTER_MAX_BUFFER_SPANS;
-import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_REPORTER_PORT;
 import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_SAMPLER_PARAM;
 import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_SAMPLER_TYPE;
+import static io.ballerina.observe.trace.jaeger.Constants.REPORTER_AGENT_HOSTNAME_CONFIG;
+import static io.ballerina.observe.trace.jaeger.Constants.REPORTER_AGENT_PORT_CONFIG;
 import static io.ballerina.observe.trace.jaeger.Constants.REPORTER_FLUSH_INTERVAL_MS_CONFIG;
-import static io.ballerina.observe.trace.jaeger.Constants.REPORTER_HOST_NAME_CONFIG;
 import static io.ballerina.observe.trace.jaeger.Constants.REPORTER_MAX_BUFFER_SPANS_CONFIG;
-import static io.ballerina.observe.trace.jaeger.Constants.REPORTER_PORT_CONFIG;
 import static io.ballerina.observe.trace.jaeger.Constants.SAMPLER_PARAM_CONFIG;
 import static io.ballerina.observe.trace.jaeger.Constants.SAMPLER_TYPE_CONFIG;
 import static io.ballerina.observe.trace.jaeger.Constants.TRACER_NAME;
@@ -61,8 +61,7 @@ public class JaegerTracerProvider implements TracerProvider {
 
     @Override
     public void init() {
-        String hostname;
-        int port;
+        String reporterEndpoint;
         try {
             ConfigRegistry configRegistry = ConfigRegistry.getInstance();
 
@@ -81,12 +80,14 @@ public class JaegerTracerProvider implements TracerProvider {
                     .withParam(samplerParam);
 
             // Create Sender Configuration
-            hostname = configRegistry.getConfigOrDefault(REPORTER_HOST_NAME_CONFIG, DEFAULT_REPORTER_HOSTNAME);
-            port = Integer.parseInt(
-                    configRegistry.getConfigOrDefault(REPORTER_PORT_CONFIG, String.valueOf(DEFAULT_REPORTER_PORT)));
+            String agentHostname = configRegistry.getConfigOrDefault(REPORTER_AGENT_HOSTNAME_CONFIG,
+                    DEFAULT_REPORTER_AGENT_HOSTNAME);
+            int agentPort = Integer.parseInt(configRegistry.getConfigOrDefault(REPORTER_AGENT_PORT_CONFIG,
+                    String.valueOf(DEFAULT_REPORTER_AGENT_PORT)));
             Configuration.SenderConfiguration senderConfiguration = new Configuration.SenderConfiguration()
-                    .withAgentHost(hostname)
-                    .withAgentPort(port);
+                    .withAgentHost(agentHostname)
+                    .withAgentPort(agentPort);
+            reporterEndpoint = agentHostname + ":" + agentPort;
 
             // Create Reporter Configuration
             int reporterFlushInterval = Integer.parseInt(configRegistry.getConfigOrDefault(
@@ -100,7 +101,7 @@ public class JaegerTracerProvider implements TracerProvider {
         } catch (Throwable t) {
             throw ErrorCreator.createError(StringUtils.fromString("invalid jaeger configurations"), t);
         }
-        console.println("ballerina: started publishing traces to Jaeger on " + hostname + ":" + port);
+        console.println("ballerina: started publishing traces to Jaeger on " + reporterEndpoint);
     }
 
     @Override

@@ -82,7 +82,8 @@ public class JaegerTracesTestCase extends BaseTestCase {
         return new Object[][]{
                 {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, new String[0]},
                 {"127.0.0.1", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, new String[]{
-                        jaegerConfTable + ".reporter.hostname=127.0.0.1", jaegerConfTable + ".reporter.port=6831"}}
+                        jaegerConfTable + ".reporter.agent.hostname=127.0.0.1",
+                        jaegerConfTable + ".reporter.agent.port=6831"}}
         };
     }
 
