@@ -24,23 +24,17 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.observability.tracer.spi.TracerProvider;
 import io.jaegertracing.Configuration;
-import io.jaegertracing.internal.samplers.ConstSampler;
-import io.jaegertracing.internal.samplers.ProbabilisticSampler;
-import io.jaegertracing.internal.samplers.RateLimitingSampler;
 import io.opentracing.Tracer;
 import io.opentracing.noop.NoopTracerFactory;
 
 import java.io.PrintStream;
 
-import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_SAMPLER_TYPE;
-import static io.ballerina.observe.trace.jaeger.Constants.TRACER_NAME;
-
 /**
  * This is the Jaeger tracing extension class for {@link TracerProvider}.
  */
 public class JaegerTracerProvider implements TracerProvider {
+    private static final String TRACER_NAME = "jaeger";
     private static final PrintStream console = System.out;
-    private static final PrintStream consoleError = System.err;
 
     private static Configuration.SamplerConfiguration samplerConfiguration;
     private static Configuration.ReporterConfiguration reporterConfiguration;
@@ -60,15 +54,8 @@ public class JaegerTracerProvider implements TracerProvider {
         String reporterEndpoint;
         try {
             // Create Sampler Configuration
-            String selectedSamplerType = samplerType.getValue();
-            if (!(selectedSamplerType.equals(ConstSampler.TYPE) || selectedSamplerType.equals(RateLimitingSampler.TYPE)
-                    || selectedSamplerType.equals(ProbabilisticSampler.TYPE))) {
-                consoleError.println("error: invalid Jaeger configuration sampler type: " + selectedSamplerType
-                        + " invalid. using default " + ConstSampler.TYPE + " sampling");
-                selectedSamplerType = DEFAULT_SAMPLER_TYPE;
-            }
             samplerConfiguration = new Configuration.SamplerConfiguration()
-                    .withType(selectedSamplerType)
+                    .withType(samplerType.getValue())
                     .withParam(samplerParam.value());
 
             // Create Sender Configuration
