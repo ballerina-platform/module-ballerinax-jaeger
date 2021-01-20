@@ -18,7 +18,7 @@
 package io.ballerina.observe.trace.jaeger.backend;
 
 /**
- * Types of supported Jaeger protocol types.
+ * Types of supported Jaeger protocols.
  */
 public enum JaegerServerProtocol {
     UDP_COMPACT_THRIFT
