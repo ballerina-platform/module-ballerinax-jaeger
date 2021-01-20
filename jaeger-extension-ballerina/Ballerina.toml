@@ -19,6 +19,11 @@ org = "ballerinax"
 name = "jaeger"
 version = "@toml.version@"
 
+[[dependency]]
+org = "ballerina"
+name = "io"
+version = "@stdlib.io.version@"
+
 [[platform.java11.dependency]]
 path = "../jaeger-extension-native/build/libs/jaeger-extension-native-@project.version@.jar"
 groupId = "ballerina"
