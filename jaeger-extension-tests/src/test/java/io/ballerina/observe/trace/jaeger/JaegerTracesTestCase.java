@@ -80,7 +80,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
         final String jaegerConfTable = "--b7a.observability.tracing.jaeger";
         return new Object[][]{
                 {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigDefault.toml"},
-                {"127.0.0.1", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigAgent.toml"}
+                {"127.0.0.1", 16831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigAgent.toml"}
         };
     }
 

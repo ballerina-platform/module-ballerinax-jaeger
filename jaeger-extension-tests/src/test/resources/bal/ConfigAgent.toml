@@ -4,4 +4,4 @@ tracingReporter="prometheus"
 
 [ballerinax.jaeger]
 agentHostname="127.0.0.1"
-agentPort=6831
+agentPort=16831
