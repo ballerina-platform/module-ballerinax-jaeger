@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
 import ballerina/http;
 import ballerina/observe; import ballerinax/jaeger as _;   // TODO: Remove extension module imports
 
@@ -45,4 +46,8 @@ class ObservableAdder {
     function getSum() returns int {
         return self.firstNumber + self.secondNumber;
     }
+}
+
+public function main() {
+    io:println("Starting Jaeger Resources");
 }

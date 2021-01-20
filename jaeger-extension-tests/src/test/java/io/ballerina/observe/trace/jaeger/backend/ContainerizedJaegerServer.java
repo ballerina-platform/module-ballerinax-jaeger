@@ -23,9 +23,11 @@ import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 /**
  * Container based Jaeger Server.
@@ -33,8 +35,8 @@ import java.util.logging.Logger;
  * This is a Jaeger server implementation based on a linux Jaeger container.
  */
 public class ContainerizedJaegerServer implements JaegerServer {
-    private static final Logger LOGGER = Logger.getLogger(ContainerizedJaegerServer.class.getName());
-    private static final String JAEGER_IMAGE = "jaegertracing/all-in-one:1.18";
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContainerizedJaegerServer.class);
+    private static final String JAEGER_IMAGE = "jaegertracing/all-in-one:1.21.0";
 
     private DockerClient dockerClient;
     private String jaegerContainerId;
@@ -52,7 +54,7 @@ public class ContainerizedJaegerServer implements JaegerServer {
     }
 
     @Override
-    public void startServer(String interfaceIP, int udpBindPort) {
+    public void startServer(String interfaceIP, int udpBindPort, JaegerServerProtocol protocol) {
         if (jaegerContainerId != null) {
             throw new IllegalStateException("Jaeger server already started");
         }
@@ -60,14 +62,27 @@ public class ContainerizedJaegerServer implements JaegerServer {
             throw new IllegalStateException("Containerized Jaeger server cannot be started after " +
                     "cleaning up docker client");
         }
+        int targetPort;
+        switch (protocol) {
+            case UDP_COMPACT_THRIFT:
+                targetPort = 6831;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown Jaeger Protocol type " + protocol);
+        }
         jaegerContainerId = dockerClient.createContainerCmd(JAEGER_IMAGE)
                 .withName("ballerina-test-jaeger-" + System.currentTimeMillis())
                 .withHostConfig(HostConfig.newHostConfig()
-                        .withPortBindings(PortBinding.parse(interfaceIP + ":" + udpBindPort + ":5775/udp"),
-                                PortBinding.parse("16686:16686/tcp")))
+                        .withPortBindings(PortBinding.parse("16686:16686/tcp"),
+                                PortBinding.parse(interfaceIP + ":" + udpBindPort + ":" + targetPort + "/udp")))
                 .exec()
                 .getId();
         dockerClient.startContainerCmd(jaegerContainerId).exec();
+        dockerClient.logContainerCmd(jaegerContainerId)
+                .withStdOut(true)
+                .withStdErr(true)
+                .withFollowStream(true)
+                .exec(new ContainerLogReader());
         LOGGER.info("Started Jaeger container with container ID " + jaegerContainerId);
     }
 
@@ -82,7 +97,7 @@ public class ContainerizedJaegerServer implements JaegerServer {
     }
 
     @Override
-    public void cleanUp() throws Exception {
+    public void cleanUp() throws IOException {
         dockerClient.close();
         dockerClient = null;
     }

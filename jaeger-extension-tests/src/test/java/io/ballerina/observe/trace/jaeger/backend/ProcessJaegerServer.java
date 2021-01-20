@@ -17,10 +17,12 @@
  */
 package io.ballerina.observe.trace.jaeger.backend;
 
-import org.ballerinalang.test.context.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.logging.Logger;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Executable program based Jaeger server.
@@ -28,11 +30,13 @@ import java.util.logging.Logger;
  * This starts and stops the server using scripts. The script paths need to be provided as environment variables.
  */
 public class ProcessJaegerServer implements JaegerServer {
-    private static final Logger LOGGER = Logger.getLogger(ContainerizedJaegerServer.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessJaegerServer.class);
     public static final String EXECUTABLE_ENV_VAR_KEY = "JAEGER_SERVER_EXECUTABLE";
 
     private final String executableFile;
     private Process jaegerServerProcess;
+    private ProcessLogReader processOutputLogReader;
+    private ProcessLogReader processErrorLogReader;
 
     public ProcessJaegerServer() {
         executableFile = System.getenv(EXECUTABLE_ENV_VAR_KEY);
@@ -46,25 +50,41 @@ public class ProcessJaegerServer implements JaegerServer {
     }
 
     @Override
-    public void startServer(String interfaceIP, int udpBindPort) throws Exception {
-        if (jaegerServerProcess != null) {
+    public void startServer(String interfaceIP, int udpBindPort, JaegerServerProtocol protocol) throws IOException {
+        if (jaegerServerProcess != null || processOutputLogReader != null || processErrorLogReader != null) {
             throw new IllegalStateException("Jaeger server already started");
         }
+        String processorFlag;
+        switch (protocol) {
+            case UDP_COMPACT_THRIFT:
+                processorFlag = "--processor.jaeger-compact.server-host-port";
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown Jaeger Protocol type " + protocol);
+        }
+        String bindPort = interfaceIP + ":" + udpBindPort;
         jaegerServerProcess = new ProcessBuilder()
-                .command(executableFile, "--collector.zipkin.http-port=9411",
-                        "--processor.zipkin-compact.server-host-port=5775")
+                .command(executableFile, processorFlag, bindPort)
                 .start();
-        Utils.waitForPortsToOpen(new int[]{udpBindPort}, 30000, true, interfaceIP);
         LOGGER.info("Started Jaeger process with process ID " + jaegerServerProcess.pid());
+
+        processOutputLogReader = new ProcessLogReader(jaegerServerProcess.getInputStream());
+        processErrorLogReader = new ProcessLogReader(jaegerServerProcess.getErrorStream());
     }
 
     @Override
-    public void stopServer() {
+    public void stopServer() throws Exception {
         if (jaegerServerProcess != null) {
             long processID = jaegerServerProcess.pid();
+            processOutputLogReader.close();
+            processErrorLogReader.close();
             jaegerServerProcess.destroy();
+            jaegerServerProcess.waitFor(10000, TimeUnit.SECONDS);
             LOGGER.info("Stopped Jaeger process with process ID " + processID);
+
             jaegerServerProcess = null;
+            processOutputLogReader = null;
+            processErrorLogReader = null;
         }
     }
 
