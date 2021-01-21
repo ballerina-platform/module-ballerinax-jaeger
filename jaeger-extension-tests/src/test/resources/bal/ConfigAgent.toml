@@ -1,6 +1,6 @@
 [ballerina.observe]
 tracingEnabled=true
-tracingReporter="prometheus"
+tracingProvider="jaeger"
 
 [ballerinax.jaeger]
 agentHostname="127.0.0.1"
