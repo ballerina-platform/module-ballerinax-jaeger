@@ -14,4 +14,41 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/java as _;     // To allow packaging Java native code
+import ballerina/io;
+import ballerina/java;
+import ballerina/observe;
+
+const PROVIDER_NAME = "jaeger";
+const DEFAULT_SAMPLER_TYPE = "const";
+
+final configurable string agentHostname = "localhost";
+final configurable int agentPort = 6831;
+final configurable string samplerType = "const";
+final configurable decimal samplerParam = 1;
+final configurable int reporterFlushInterval = 1000;
+final configurable int reporterBufferSize = 10000;
+
+function init() {
+    if (observe:isTracingEnabled() && observe:getTracingProvider() == PROVIDER_NAME) {
+        string selectedSamplerType;
+        if (samplerType != "const" && samplerType != "ratelimiting" && samplerType != "probabilistic") {
+            selectedSamplerType = DEFAULT_SAMPLER_TYPE;
+            io:println("error: invalid Jaeger configuration sampler type: " + samplerType
+                                               + ". using default " + DEFAULT_SAMPLER_TYPE + " sampling");
+        } else {
+            selectedSamplerType = samplerType;
+        }
+
+        error? err = externInitializeConfigurations(agentHostname, agentPort, selectedSamplerType, samplerParam,
+            reporterFlushInterval, reporterBufferSize);
+        if (err is error) {
+            io:println(err);
+        }
+    }
+}
+
+function externInitializeConfigurations(string agentHostname, int agentPort, string samplerType,
+        decimal samplerParam, int reporterFlushInterval, int reporterBufferSize) returns error? = @java:Method {
+    'class: "io.ballerina.observe.trace.jaeger.JaegerTracerProvider",
+    name: "initializeConfigurations"
+} external;

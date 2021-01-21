@@ -38,17 +38,16 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static io.ballerina.runtime.observability.ObservabilityConstants.CONFIG_TABLE_TRACING;
-import static io.ballerina.runtime.observability.ObservabilityConstants.CONFIG_TRACING_ENABLED;
 import static io.ballerina.runtime.observability.ObservabilityConstants.UNKNOWN_SERVICE;
 
 /**
@@ -80,16 +79,14 @@ public class JaegerTracesTestCase extends BaseTestCase {
     public Object[][] getTestJaegerMetricsData() {
         final String jaegerConfTable = "--b7a.observability.tracing.jaeger";
         return new Object[][]{
-                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, new String[0]},
-                {"127.0.0.1", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, new String[]{
-                        jaegerConfTable + ".reporter.agent.hostname=127.0.0.1",
-                        jaegerConfTable + ".reporter.agent.port=6831"}}
+                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigDefault.toml"},
+                {"127.0.0.1", 16831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigAgent.toml"}
         };
     }
 
     @Test(dataProvider = "test-jaeger-metrics-data")
     public void testJaegerMetrics(String host, int jaegerReportAddress, JaegerServerProtocol jaegerReportProtocol,
-                                  String[] additionalRuntimeArgs)
+                                  String configFilename)
             throws Exception {
         jaegerServer.startServer(host, jaegerReportAddress, jaegerReportProtocol);
 
@@ -103,15 +100,13 @@ public class JaegerTracesTestCase extends BaseTestCase {
         LogLeecher exceptionLogLeecher = new LogLeecher("Exception");
         serverInstance.addErrorLogLeecher(exceptionLogLeecher);
 
-        final List<String> runtimeArgs = new ArrayList<>(Arrays.asList(
-                "--" + CONFIG_TRACING_ENABLED + "=true",
-                "--" + CONFIG_TABLE_TRACING + ".provider=jaeger"
-        ));
-        runtimeArgs.addAll(Arrays.asList(additionalRuntimeArgs));
+        String configFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), configFilename).toFile().getAbsolutePath();
+        Map<String, String> env = new HashMap<>();
+        env.put("BALCONFIGFILE", configFile);
+
         final String balFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), "01_http_svc_test.bal").toFile()
                 .getAbsolutePath();
-        serverInstance.startServer(balFile, new String[]{"--observability-included"},
-                runtimeArgs.toArray(new String[0]), new int[] { 9091 });
+        serverInstance.startServer(balFile, new String[]{"--observability-included"}, null, env, new int[] { 9091 });
         jaegerExtLogLeecher.waitForText(1000);
         sampleServerLogLeecher.waitForText(1000);
 

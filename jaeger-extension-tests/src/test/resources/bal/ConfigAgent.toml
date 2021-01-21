@@ -1,0 +1,7 @@
+[ballerina.observe]
+tracingEnabled=true
+tracingReporter="prometheus"
+
+[ballerinax.jaeger]
+agentHostname="127.0.0.1"
+agentPort=16831

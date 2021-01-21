@@ -19,40 +19,25 @@ package io.ballerina.observe.trace.jaeger;
 
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BDecimal;
+import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.observability.tracer.spi.TracerProvider;
 import io.jaegertracing.Configuration;
-import io.jaegertracing.internal.samplers.ConstSampler;
-import io.jaegertracing.internal.samplers.ProbabilisticSampler;
-import io.jaegertracing.internal.samplers.RateLimitingSampler;
 import io.opentracing.Tracer;
 import io.opentracing.noop.NoopTracerFactory;
-import org.ballerinalang.config.ConfigRegistry;
 
 import java.io.PrintStream;
-
-import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_REPORTER_AGENT_HOSTNAME;
-import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_REPORTER_AGENT_PORT;
-import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_REPORTER_FLUSH_INTERVAL;
-import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_REPORTER_MAX_BUFFER_SPANS;
-import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_SAMPLER_PARAM;
-import static io.ballerina.observe.trace.jaeger.Constants.DEFAULT_SAMPLER_TYPE;
-import static io.ballerina.observe.trace.jaeger.Constants.REPORTER_AGENT_HOSTNAME_CONFIG;
-import static io.ballerina.observe.trace.jaeger.Constants.REPORTER_AGENT_PORT_CONFIG;
-import static io.ballerina.observe.trace.jaeger.Constants.REPORTER_FLUSH_INTERVAL_MS_CONFIG;
-import static io.ballerina.observe.trace.jaeger.Constants.REPORTER_MAX_BUFFER_SPANS_CONFIG;
-import static io.ballerina.observe.trace.jaeger.Constants.SAMPLER_PARAM_CONFIG;
-import static io.ballerina.observe.trace.jaeger.Constants.SAMPLER_TYPE_CONFIG;
-import static io.ballerina.observe.trace.jaeger.Constants.TRACER_NAME;
 
 /**
  * This is the Jaeger tracing extension class for {@link TracerProvider}.
  */
 public class JaegerTracerProvider implements TracerProvider {
+    private static final String TRACER_NAME = "jaeger";
     private static final PrintStream console = System.out;
-    private static final PrintStream consoleError = System.err;
 
-    private Configuration.SamplerConfiguration samplerConfiguration;
-    private Configuration.ReporterConfiguration reporterConfiguration;
+    private static Configuration.SamplerConfiguration samplerConfiguration;
+    private static Configuration.ReporterConfiguration reporterConfiguration;
 
     @Override
     public String getName() {
@@ -60,48 +45,35 @@ public class JaegerTracerProvider implements TracerProvider {
     }
 
     @Override
-    public void init() {
+    public void init() {    // Do Nothing
+    }
+
+    public static BError initializeConfigurations(BString agentHostname, int agentPort, BString samplerType,
+                                                  BDecimal samplerParam, int reporterFlushInterval,
+                                                  int reporterBufferSize) {
         String reporterEndpoint;
         try {
-            ConfigRegistry configRegistry = ConfigRegistry.getInstance();
-
             // Create Sampler Configuration
-            String samplerType = configRegistry.getConfigOrDefault(SAMPLER_TYPE_CONFIG, DEFAULT_SAMPLER_TYPE);
-            if (!(samplerType.equals(ConstSampler.TYPE) || samplerType.equals(RateLimitingSampler.TYPE)
-                    || samplerType.equals(ProbabilisticSampler.TYPE))) {
-                consoleError.println("error: invalid Jaeger configuration sampler type: " + samplerType
-                        + " invalid. using default const sampling");
-                samplerType = DEFAULT_SAMPLER_TYPE;
-            }
-            Number samplerParam = Float.valueOf(
-                    configRegistry.getConfigOrDefault(SAMPLER_PARAM_CONFIG, String.valueOf(DEFAULT_SAMPLER_PARAM)));
             samplerConfiguration = new Configuration.SamplerConfiguration()
-                    .withType(samplerType)
-                    .withParam(samplerParam);
+                    .withType(samplerType.getValue())
+                    .withParam(samplerParam.value());
 
             // Create Sender Configuration
-            String agentHostname = configRegistry.getConfigOrDefault(REPORTER_AGENT_HOSTNAME_CONFIG,
-                    DEFAULT_REPORTER_AGENT_HOSTNAME);
-            int agentPort = Integer.parseInt(configRegistry.getConfigOrDefault(REPORTER_AGENT_PORT_CONFIG,
-                    String.valueOf(DEFAULT_REPORTER_AGENT_PORT)));
             Configuration.SenderConfiguration senderConfiguration = new Configuration.SenderConfiguration()
-                    .withAgentHost(agentHostname)
+                    .withAgentHost(agentHostname.getValue())
                     .withAgentPort(agentPort);
             reporterEndpoint = agentHostname + ":" + agentPort;
 
             // Create Reporter Configuration
-            int reporterFlushInterval = Integer.parseInt(configRegistry.getConfigOrDefault(
-                    REPORTER_FLUSH_INTERVAL_MS_CONFIG, String.valueOf(DEFAULT_REPORTER_FLUSH_INTERVAL)));
-            int reporterBufferSize = Integer.parseInt(configRegistry.getConfigOrDefault(
-                    REPORTER_MAX_BUFFER_SPANS_CONFIG, String.valueOf(DEFAULT_REPORTER_MAX_BUFFER_SPANS)));
             reporterConfiguration = new Configuration.ReporterConfiguration()
                     .withSender(senderConfiguration)
                     .withFlushInterval(reporterFlushInterval)
                     .withMaxQueueSize(reporterBufferSize);
         } catch (Throwable t) {
-            throw ErrorCreator.createError(StringUtils.fromString("invalid jaeger configurations"), t);
+            return ErrorCreator.createError(StringUtils.fromString("invalid jaeger configurations"), t);
         }
         console.println("ballerina: started publishing traces to Jaeger on " + reporterEndpoint);
+        return null;
     }
 
     @Override
