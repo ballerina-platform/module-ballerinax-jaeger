@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+plugins {
+    id 'jacoco'
+}
+
 description = 'Ballerina - Jaeger Extension Tests'
 
 configurations {
@@ -119,6 +123,7 @@ task createServerZip(type: Zip) {
 
 test {
     dependsOn createServerZip
+    finalizedBy jacocoTestReport
 
     testLogging {
         showStackTraces true
@@ -136,5 +141,17 @@ test {
     systemProperty 'ballerina.agent.path', configurations.testUtils.asPath
     useTestNG() {
         suites 'src/test/resources/testng.xml'
+    }
+}
+
+jacocoTestReport {
+    dependsOn test
+
+    afterEvaluate {
+        def nativeBuildDir = "${rootProject.projectDir}/jaeger-extension-native/build";
+        classDirectories.setFrom(
+                file("${nativeBuildDir}/classes/java/main"),
+                file("${nativeBuildDir}/resources/main")
+        )
     }
 }
