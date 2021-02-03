@@ -17,8 +17,6 @@
  */
 package io.ballerina.observe.trace.jaeger;
 
-import io.ballerina.runtime.api.creators.ErrorCreator;
-import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BDecimal;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BString;
@@ -51,27 +49,22 @@ public class JaegerTracerProvider implements TracerProvider {
     public static BError initializeConfigurations(BString agentHostname, int agentPort, BString samplerType,
                                                   BDecimal samplerParam, int reporterFlushInterval,
                                                   int reporterBufferSize) {
-        String reporterEndpoint;
-        try {
-            // Create Sampler Configuration
-            samplerConfiguration = new Configuration.SamplerConfiguration()
-                    .withType(samplerType.getValue())
-                    .withParam(samplerParam.value());
+        // Create Sampler Configuration
+        samplerConfiguration = new Configuration.SamplerConfiguration()
+                .withType(samplerType.getValue())
+                .withParam(samplerParam.value());
 
-            // Create Sender Configuration
-            Configuration.SenderConfiguration senderConfiguration = new Configuration.SenderConfiguration()
-                    .withAgentHost(agentHostname.getValue())
-                    .withAgentPort(agentPort);
-            reporterEndpoint = agentHostname + ":" + agentPort;
+        // Create Sender Configuration
+        Configuration.SenderConfiguration senderConfiguration = new Configuration.SenderConfiguration()
+                .withAgentHost(agentHostname.getValue())
+                .withAgentPort(agentPort);
+        String reporterEndpoint = agentHostname + ":" + agentPort;
 
-            // Create Reporter Configuration
-            reporterConfiguration = new Configuration.ReporterConfiguration()
-                    .withSender(senderConfiguration)
-                    .withFlushInterval(reporterFlushInterval)
-                    .withMaxQueueSize(reporterBufferSize);
-        } catch (Throwable t) {
-            return ErrorCreator.createError(StringUtils.fromString("invalid jaeger configurations"), t);
-        }
+        // Create Reporter Configuration
+        reporterConfiguration = new Configuration.ReporterConfiguration()
+                .withSender(senderConfiguration)
+                .withFlushInterval(reporterFlushInterval)
+                .withMaxQueueSize(reporterBufferSize);
         console.println("ballerina: started publishing traces to Jaeger on " + reporterEndpoint);
         return null;
     }
