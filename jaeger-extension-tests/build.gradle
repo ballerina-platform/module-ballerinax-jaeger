@@ -124,6 +124,7 @@ task createServerZip(type: Zip) {
 test {
     dependsOn createServerZip
     finalizedBy jacocoTestReport
+    finalizedBy jacocoTestCoverageVerification
 
     testLogging {
         showStackTraces true
@@ -144,15 +145,33 @@ test {
     }
 }
 
+def nativeModuleDir = "${rootProject.projectDir}/jaeger-extension-native";
+def nativeModuleClasses = "${nativeModuleDir}/build/classes/java/main"
+def nativeModuleResources = "${nativeModuleDir}/build/resources/main"
+def nativeModuleSources = "${nativeModuleDir}/src/main/java"
+
 jacocoTestReport {
     dependsOn test
 
     afterEvaluate {
-        def nativeProjectDir = "${rootProject.projectDir}/jaeger-extension-native";
-        classDirectories.setFrom(
-                file("${nativeProjectDir}/build/classes/java/main"),
-                file("${nativeProjectDir}/build/resources/main")
-        )
-        sourceDirectories.setFrom(file("${nativeProjectDir}/src/main/java"))
+        classDirectories.setFrom(file(nativeModuleClasses), file(nativeModuleResources))
+        sourceDirectories.setFrom(file(nativeModuleSources))
+    }
+}
+
+jacocoTestCoverageVerification {
+    dependsOn jacocoTestReport
+
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.90
+            }
+        }
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(file(nativeModuleClasses), file(nativeModuleResources))
+        sourceDirectories.setFrom(file(nativeModuleSources))
     }
 }
