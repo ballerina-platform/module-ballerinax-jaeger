@@ -148,10 +148,11 @@ jacocoTestReport {
     dependsOn test
 
     afterEvaluate {
-        def nativeBuildDir = "${rootProject.projectDir}/jaeger-extension-native/build";
+        def nativeProjectDir = "${rootProject.projectDir}/jaeger-extension-native";
         classDirectories.setFrom(
-                file("${nativeBuildDir}/classes/java/main"),
-                file("${nativeBuildDir}/resources/main")
+                file("${nativeProjectDir}/build/classes/java/main"),
+                file("${nativeProjectDir}/build/resources/main")
         )
+        sourceDirectories.setFrom(file("${nativeProjectDir}/src/main/java"))
     }
 }
