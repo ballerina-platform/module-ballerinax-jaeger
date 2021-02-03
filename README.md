@@ -3,6 +3,7 @@
 [![Build](https://github.com/ballerina-platform/module-ballerinax-jaeger/workflows/Daily%20Build/badge.svg)](https://github.com/ballerina-platform/module-ballerinax-jaeger/actions?query=workflow%3A"Daily+Build")
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerinax-jaeger.svg)](https://github.com/ballerina-platform/module-ballerinax-jaeger/commits/main)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![codecov](https://codecov.io/gh/ballerina-platform/module-ballerinax-jaeger/branch/main/graph/badge.svg?token=5GCQ36HBEB)](https://codecov.io/gh/ballerina-platform/module-ballerinax-jaeger)
 
 The Jaeger Observability Extension is one of the tracing extensions of the<a target="_blank" href="https://ballerina.io/"> Ballerina</a> language.
 

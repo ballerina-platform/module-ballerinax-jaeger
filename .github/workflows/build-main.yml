@@ -28,3 +28,7 @@ jobs:
           packagePublishRepo: ${{ github.repository }}
         run: |
           ./gradlew clean build publish --stacktrace --scan --console=plain --no-daemon
+      - name: Upload Coverage Report
+        uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true
