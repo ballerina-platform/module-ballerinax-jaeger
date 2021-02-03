@@ -27,6 +27,7 @@ import io.ballerina.observe.trace.jaeger.model.JaegerTag;
 import io.ballerina.observe.trace.jaeger.model.JaegerTrace;
 import org.ballerinalang.test.context.BServerInstance;
 import org.ballerinalang.test.context.LogLeecher;
+import org.ballerinalang.test.context.Utils;
 import org.ballerinalang.test.util.HttpClientRequest;
 import org.ballerinalang.test.util.HttpResponse;
 import org.testng.Assert;
@@ -106,8 +107,10 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
         final String balFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), "01_http_svc_test.bal").toFile()
                 .getAbsolutePath();
-        serverInstance.startServer(balFile, new String[]{"--observability-included"}, null, env, new int[] { 9091 });
-        jaegerExtLogLeecher.waitForText(1000);
+        int[] requiredPorts = {9091};
+        serverInstance.startServer(balFile, new String[]{"--observability-included"}, null, env, requiredPorts);
+        Utils.waitForPortsToOpen(requiredPorts, 1000 * 60, false, "localhost");
+        jaegerExtLogLeecher.waitForText(10000);
         sampleServerLogLeecher.waitForText(1000);
 
         // Send requests to generate metrics
@@ -254,8 +257,10 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
         final String balFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), "01_http_svc_test.bal").toFile()
                 .getAbsolutePath();
-        serverInstance.startServer(balFile, null, null, new int[] { 9091 });
-        sampleServerLogLeecher.waitForText(1000);
+        int[] requiredPorts = {9091};
+        serverInstance.startServer(balFile, null, null, requiredPorts);
+        Utils.waitForPortsToOpen(requiredPorts, 1000 * 60, false, "localhost");
+        sampleServerLogLeecher.waitForText(10000);
 
         String responseData = HttpClientRequest.doGet(TEST_RESOURCE_URL).getData();
         Assert.assertEquals(responseData, "Sum: 53");
