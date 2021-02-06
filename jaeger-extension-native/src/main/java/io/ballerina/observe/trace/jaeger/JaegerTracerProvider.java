@@ -18,7 +18,6 @@
 package io.ballerina.observe.trace.jaeger;
 
 import io.ballerina.runtime.api.values.BDecimal;
-import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.observability.tracer.spi.TracerProvider;
 import io.jaegertracing.Configuration;
@@ -46,7 +45,7 @@ public class JaegerTracerProvider implements TracerProvider {
     public void init() {    // Do Nothing
     }
 
-    public static BError initializeConfigurations(BString agentHostname, int agentPort, BString samplerType,
+    public static void initializeConfigurations(BString agentHostname, int agentPort, BString samplerType,
                                                   BDecimal samplerParam, int reporterFlushInterval,
                                                   int reporterBufferSize) {
         // Create Sampler Configuration
@@ -66,7 +65,6 @@ public class JaegerTracerProvider implements TracerProvider {
                 .withFlushInterval(reporterFlushInterval)
                 .withMaxQueueSize(reporterBufferSize);
         console.println("ballerina: started publishing traces to Jaeger on " + reporterEndpoint);
-        return null;
     }
 
     @Override

@@ -145,7 +145,7 @@ test {
     }
 }
 
-def nativeModuleDir = "${rootProject.projectDir}/jaeger-extension-native";
+def nativeModuleDir = "${rootProject.projectDir}/jaeger-extension-native"
 def nativeModuleClasses = "${nativeModuleDir}/build/classes/java/main"
 def nativeModuleResources = "${nativeModuleDir}/build/resources/main"
 def nativeModuleSources = "${nativeModuleDir}/src/main/java"
