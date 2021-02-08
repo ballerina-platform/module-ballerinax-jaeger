@@ -39,16 +39,13 @@ function init() {
             selectedSamplerType = samplerType;
         }
 
-        error? err = externInitializeConfigurations(agentHostname, agentPort, selectedSamplerType, samplerParam,
+        externInitializeConfigurations(agentHostname, agentPort, selectedSamplerType, samplerParam,
             reporterFlushInterval, reporterBufferSize);
-        if (err is error) {
-            io:println(err);
-        }
     }
 }
 
 function externInitializeConfigurations(string agentHostname, int agentPort, string samplerType,
-        decimal samplerParam, int reporterFlushInterval, int reporterBufferSize) returns error? = @java:Method {
+        decimal samplerParam, int reporterFlushInterval, int reporterBufferSize) = @java:Method {
     'class: "io.ballerina.observe.trace.jaeger.JaegerTracerProvider",
     name: "initializeConfigurations"
 } external;
