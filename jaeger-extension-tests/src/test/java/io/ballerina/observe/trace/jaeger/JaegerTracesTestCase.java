@@ -49,7 +49,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static io.ballerina.runtime.observability.ObservabilityConstants.UNKNOWN_SERVICE;
+import static io.ballerina.runtime.observability.ObservabilityConstants.DEFAULT_SERVICE_NAME;
 
 /**
  * Integration test for Jaeger extension.
@@ -131,7 +131,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
         Assert.assertNotNull(servicesQueryResponseData);
         Assert.assertEquals(servicesQueryResponseData.size(), 2);
         Assert.assertEquals(new HashSet<>(servicesQueryResponseData),
-                new HashSet<>(Arrays.asList(SAMPLE_SERVER_NAME, UNKNOWN_SERVICE)));
+                new HashSet<>(Arrays.asList(SAMPLE_SERVER_NAME, DEFAULT_SERVICE_NAME)));
 
         // Read traces from Jaeger query endpoint
         HttpResponse tracesQueryHttpResponse = HttpClientRequest.doGet("http://localhost:16686/api/traces?end="
