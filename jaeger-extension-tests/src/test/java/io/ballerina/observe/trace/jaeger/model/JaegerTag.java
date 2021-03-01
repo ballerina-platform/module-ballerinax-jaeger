@@ -75,4 +75,13 @@ public class JaegerTag {
     public int hashCode() {
         return Objects.hash(getKey(), getType(), getValue());
     }
+
+    @Override
+    public String toString() {
+        return "JaegerTag{" +
+                "key='" + key + '\'' +
+                ", type='" + type + '\'' +
+                ", value='" + value + '\'' +
+                '}';
+    }
 }
