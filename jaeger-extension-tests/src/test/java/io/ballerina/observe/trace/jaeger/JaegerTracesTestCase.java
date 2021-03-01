@@ -62,7 +62,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
     private static final String JAEGER_EXTENSION_LOG_PREFIX = "ballerina: started publishing traces to Jaeger on ";
     private static final String SAMPLE_SERVER_LOG = "[ballerina/http] started HTTP/WS listener 0.0.0.0:9091";
-    private static final String SAMPLE_SERVER_NAME = "$anonType$_0";
+    private static final String SAMPLE_SERVER_NAME = "$anon_._svc_0";
     private static final String JAEGER_PROCESS_ID = "p1";
 
     @BeforeMethod
@@ -163,7 +163,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
         Assert.assertEquals(span1.getTags(), new HashSet<>(Arrays.asList(
                 new JaegerTag("src.module", "string", "$anon/.:0.0.0"),
                 new JaegerTag("listener.name", "string", "http"),
-                new JaegerTag("src.object.name", "string", "$anonType$_0"),
+                new JaegerTag("src.object.name", "string", SAMPLE_SERVER_NAME),
                 new JaegerTag("entrypoint.function.module", "string", "$anon/.:0.0.0"),
                 new JaegerTag("sampler.type", "string", "const"),
                 new JaegerTag("sampler.param", "bool", "true"),
