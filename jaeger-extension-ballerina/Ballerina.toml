@@ -38,18 +38,6 @@ artifactId = "jaeger-thrift"
 version = "@jaeger.version@"
 
 [[platform.java11.dependency]]
-path = "./lib/opentracing-util-@opentracing.version@.jar"
-groupId = "io.opentracing"
-artifactId = "opentracing-util"
-version = "@opentracing.version@"
-
-[[platform.java11.dependency]]
-path = "./lib/opentracing-noop-@opentracing.version@.jar"
-groupId = "io.opentracing"
-artifactId = "opentracing-noop"
-version = "@opentracing.version@"
-
-[[platform.java11.dependency]]
 path = "./lib/libthrift-@libthrift.version@.jar"
 groupId = "org.apache.thrift"
 artifactId = "libthrift"
@@ -62,7 +50,55 @@ artifactId = "okhttp"
 version = "@okhttp.version@"
 
 [[platform.java11.dependency]]
-path = "./lib/okio-@okio.version@.jar"
+path = "./lib/okio-jvm-@okio.version@.jar"
 groupId = "com.squareup.okio"
 artifactId = "okio"
 version = "@okio.version@"
+
+[[platform.java11.dependency]]
+path = "./lib/kotlin-stdlib-@kotlin.version@.jar"
+groupId = "org.jetbrains.kotlin"
+artifactId = "kotlin-stdlib"
+version = "@kotlin.version@"
+
+[[platform.java11.dependency]]
+path = "./lib/opentelemetry-api-@opentelemetry.version@.jar"
+groupId = "io.opentelemetry"
+artifactId = "opentelemetry-api"
+version = "@opentelemetry.version@"
+
+[[platform.java11.dependency]]
+path = "./lib/opentelemetry-api-metrics-@openTelemetrySemconv.version@.jar"
+groupId = "io.opentelemetry"
+artifactId = "opentelemetry-api-metrics"
+version = "@openTelemetrySemconv.version@"
+
+[[platform.java11.dependency]]
+path = "./lib/opentelemetry-context-@opentelemetry.version@.jar"
+groupId = "io.opentelemetry"
+artifactId = "opentelemetry-context"
+version = "@opentelemetry.version@"
+
+[[platform.java11.dependency]]
+path = "./lib/opentelemetry-sdk-trace-@opentelemetry.version@.jar"
+groupId = "io.opentelemetry"
+artifactId = "opentelemetry-sdk-trace"
+version = "@opentelemetry.version@"
+
+[[platform.java11.dependency]]
+path = "./lib/opentelemetry-sdk-common-@opentelemetry.version@.jar"
+groupId = "io.opentelemetry"
+artifactId = "opentelemetry-sdk-common"
+version = "@opentelemetry.version@"
+
+[[platform.java11.dependency]]
+path = "./lib/opentelemetry-semconv-@openTelemetrySemconv.version@.jar"
+groupId = "io.opentelemetry"
+artifactId = "opentelemetry-semconv"
+version = "@openTelemetrySemconv.version@"
+
+[[platform.java11.dependency]]
+path = "./lib/opentelemetry-exporter-jaeger-thrift-@opentelemetry.version@.jar"
+groupId = "io.opentelemetry"
+artifactId = "opentelemetry-exporter-jaeger-thrift"
+version = "@opentelemetry.version@"

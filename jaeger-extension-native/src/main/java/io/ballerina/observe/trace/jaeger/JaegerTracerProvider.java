@@ -20,11 +20,17 @@ package io.ballerina.observe.trace.jaeger;
 import io.ballerina.runtime.api.values.BDecimal;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.observability.tracer.spi.TracerProvider;
-import io.jaegertracing.Configuration;
-import io.opentracing.Tracer;
-import io.opentracing.noop.NoopTracerFactory;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporter;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 import java.io.PrintStream;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This is the Jaeger tracing extension class for {@link TracerProvider}.
@@ -33,8 +39,7 @@ public class JaegerTracerProvider implements TracerProvider {
     private static final String TRACER_NAME = "jaeger";
     private static final PrintStream console = System.out;
 
-    private static Configuration.SamplerConfiguration samplerConfiguration;
-    private static Configuration.ReporterConfiguration reporterConfiguration;
+    static SdkTracerProvider tracerProvider;
 
     @Override
     public String getName() {
@@ -46,34 +51,56 @@ public class JaegerTracerProvider implements TracerProvider {
     }
 
     public static void initializeConfigurations(BString agentHostname, int agentPort, BString samplerType,
-                                                  BDecimal samplerParam, int reporterFlushInterval,
-                                                  int reporterBufferSize) {
-        // Create Sampler Configuration
-        samplerConfiguration = new Configuration.SamplerConfiguration()
-                .withType(samplerType.getValue())
-                .withParam(samplerParam.value());
+                                                BDecimal samplerParam, int reporterFlushInterval,
+                                                int reporterBufferSize) {
 
-        // Create Sender Configuration
-        Configuration.SenderConfiguration senderConfiguration = new Configuration.SenderConfiguration()
-                .withAgentHost(agentHostname.getValue())
-                .withAgentPort(agentPort);
         String reporterEndpoint = agentHostname + ":" + agentPort;
+        if (!reporterEndpoint.startsWith("http")) {
+            reporterEndpoint = "http://" + reporterEndpoint;
+        }
 
-        // Create Reporter Configuration
-        reporterConfiguration = new Configuration.ReporterConfiguration()
-                .withSender(senderConfiguration)
-                .withFlushInterval(reporterFlushInterval)
-                .withMaxQueueSize(reporterBufferSize);
+        JaegerThriftSpanExporter exporter =
+                JaegerThriftSpanExporter.builder()
+                        .setEndpoint(reporterEndpoint)
+                        .build();
+
+        SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder()
+                .addSpanProcessor(BatchSpanProcessor
+                        .builder(exporter)
+                        .setMaxExportBatchSize(reporterBufferSize)
+                        .setExporterTimeout(reporterFlushInterval, TimeUnit.MILLISECONDS)
+                        .build());
+
+        switch (samplerType.getValue()) {
+            default:
+            case "const":
+                if (samplerParam.value().intValue() == 0) {
+                    tracerProviderBuilder.setSampler(Sampler.alwaysOff());
+                } else {
+                    tracerProviderBuilder.setSampler(Sampler.alwaysOn());
+                }
+                break;
+            case "probabilistic":
+                tracerProviderBuilder.setSampler(Sampler.traceIdRatioBased(samplerParam.value().doubleValue()));
+                break;
+            case "ratelimiting":
+                tracerProviderBuilder.setSampler(new RateLimitingSampler(samplerParam.value().intValue()));
+                break;
+        }
+
+        tracerProvider = tracerProviderBuilder.build();
         console.println("ballerina: started publishing traces to Jaeger on " + reporterEndpoint);
     }
 
     @Override
     public Tracer getTracer(String serviceName) {
-        return new Configuration(serviceName)
-                .withSampler(samplerConfiguration)
-                .withReporter(reporterConfiguration)
-                .getTracerBuilder()
-                .withScopeManager(NoopTracerFactory.create().scopeManager())
-                .build();
+
+        return tracerProvider.get(serviceName);
+    }
+
+    @Override
+    public ContextPropagators getPropagators() {
+
+        return ContextPropagators.create(W3CTraceContextPropagator.getInstance());
     }
 }

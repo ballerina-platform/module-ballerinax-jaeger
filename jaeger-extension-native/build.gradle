@@ -24,10 +24,17 @@ dependencies {
     implementation "org.ballerinalang:ballerina-runtime:${ballerinaLangVersion}"
     implementation "io.jaegertracing:jaeger-core:${jaegerVersion}"
     implementation "io.jaegertracing:jaeger-thrift:${jaegerVersion}"
-    implementation "io.opentracing:opentracing-noop:${openTracingVersion}"
+    implementation "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-api-metrics:${openTelemetrySemconvVersion}"
+    implementation "io.opentelemetry:opentelemetry-context:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-sdk-trace:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-sdk-common:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-semconv:${openTelemetrySemconvVersion}"
+    implementation "io.opentelemetry:opentelemetry-exporter-jaeger-thrift:${openTelemetryVersion}"
     implementation "org.apache.thrift:libthrift:${libThriftVersion}"
     implementation "com.squareup.okhttp3:okhttp:${okHttpVersion}"
     implementation "com.squareup.okio:okio:${okIoVersion}"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"
 }
 
 compileJava {
