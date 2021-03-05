@@ -78,16 +78,30 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
     @DataProvider(name = "test-jaeger-metrics-data")
     public Object[][] getTestJaegerMetricsData() {
+        JaegerTag defaultSamplerTypeTag = new JaegerTag("sampler.type", "string", "const");
+        JaegerTag defaultSamplerParamTag = new JaegerTag("sampler.param", "bool", "true");
         return new Object[][]{
-                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigDefault.toml"},
-                {"127.0.0.1", 16831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigAgent.toml"},
-                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigInvalidSampler.toml"}
+                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigDefault.toml",
+                        defaultSamplerTypeTag, defaultSamplerParamTag},
+                {"127.0.0.1", 16831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigAgent.toml",
+                        defaultSamplerTypeTag, defaultSamplerParamTag},
+                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigInvalidSampler.toml",
+                        defaultSamplerTypeTag, defaultSamplerParamTag},
+                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigSamplerConst.toml",
+                        new JaegerTag("sampler.type", "string", "const"),
+                        new JaegerTag("sampler.param", "bool", "true")},
+                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigSamplerProbabilistic.toml",
+                        new JaegerTag("sampler.type", "string", "probabilistic"),
+                        new JaegerTag("sampler.param", "float64", "1")},
+                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigSamplerRatelimiting.toml",
+                        new JaegerTag("sampler.type", "string", "ratelimiting"),
+                        new JaegerTag("sampler.param", "float64", "1")}
         };
     }
 
     @Test(dataProvider = "test-jaeger-metrics-data")
     public void testJaegerMetrics(String host, int jaegerReportAddress, JaegerServerProtocol jaegerReportProtocol,
-                                  String configFilename)
+                                  String configFilename, JaegerTag samplerTypeTag, JaegerTag samplerParamTag)
             throws Exception {
         jaegerServer.startServer(host, jaegerReportAddress, jaegerReportProtocol);
 
@@ -165,8 +179,6 @@ public class JaegerTracesTestCase extends BaseTestCase {
                 new JaegerTag("listener.name", "string", "http"),
                 new JaegerTag("src.object.name", "string", SAMPLE_SERVER_NAME),
                 new JaegerTag("entrypoint.function.module", "string", "$anon/.:0.0.0"),
-                new JaegerTag("sampler.type", "string", "const"),
-                new JaegerTag("sampler.param", "bool", "true"),
                 new JaegerTag("http.url", "string", "/test/sum"),
                 new JaegerTag("src.resource.accessor", "string", "get"),
                 new JaegerTag("entrypoint.function.position", "string", span1Position),
@@ -176,7 +188,9 @@ public class JaegerTracesTestCase extends BaseTestCase {
                 new JaegerTag("src.position", "string", span1Position),
                 new JaegerTag("src.resource.path", "string", "/sum"),
                 new JaegerTag("http.method", "string", "GET"),
-                new JaegerTag("internal.span.format", "string", "proto")
+                new JaegerTag("internal.span.format", "string", "proto"),
+                samplerTypeTag,
+                samplerParamTag
         )));
 
         String span2Position = "01_http_svc_test.bal:24:19";
