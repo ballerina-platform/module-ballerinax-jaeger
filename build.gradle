@@ -278,7 +278,6 @@ task build {
 
 task codeCoverageReport(type: JacocoReport) {
     dependsOn('jaeger-extension-ballerina:extractBallerinaClassFiles')
-
     dependsOn('jaeger-extension-native:copyJavaClassFiles')
 
     executionData fileTree(project.rootDir.absolutePath).include("**/*.exec")
