@@ -78,7 +78,6 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
     @DataProvider(name = "test-jaeger-metrics-data")
     public Object[][] getTestJaegerMetricsData() {
-        final String jaegerConfTable = "--b7a.observability.tracing.jaeger";
         return new Object[][]{
                 {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigDefault.toml"},
                 {"127.0.0.1", 16831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigAgent.toml"},
@@ -268,6 +267,37 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
         Assert.assertFalse(jaegerExtLogLeecher.isTextFound(), "Jaeger extension not expected to enable");
         Assert.assertFalse(errorLogLeecher.isTextFound(), "Unexpected error log found");
+        Assert.assertFalse(exceptionLogLeecher.isTextFound(), "Unexpected exception log found");
+    }
+
+    @Test
+    public void testInvalidTracingProviderName() throws Exception {
+        LogLeecher sampleServerLogLeecher = new LogLeecher(SAMPLE_SERVER_LOG);
+        serverInstance.addLogLeecher(sampleServerLogLeecher);
+        LogLeecher jaegerExtLogLeecher = new LogLeecher(JAEGER_EXTENSION_LOG_PREFIX);
+        serverInstance.addLogLeecher(jaegerExtLogLeecher);
+        LogLeecher tracerNotFoundLog = new LogLeecher("error: tracer provider invalid not found");
+        serverInstance.addErrorLogLeecher(tracerNotFoundLog);
+        LogLeecher exceptionLogLeecher = new LogLeecher("Exception");
+        serverInstance.addErrorLogLeecher(exceptionLogLeecher);
+
+        String configFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), "ConfigInvalidProvider.toml").toFile()
+                .getAbsolutePath();
+        Map<String, String> env = new HashMap<>();
+        env.put("BALCONFIGFILE", configFile);
+
+        final String balFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), "01_http_svc_test.bal").toFile()
+                .getAbsolutePath();
+        int[] requiredPorts = {9091};
+        serverInstance.startServer(balFile, new String[]{"--observability-included"}, null, env, requiredPorts);
+        Utils.waitForPortsToOpen(requiredPorts, 1000 * 60, false, "localhost");
+        tracerNotFoundLog.waitForText(10000);
+        sampleServerLogLeecher.waitForText(10000);
+
+        String responseData = HttpClientRequest.doGet(TEST_RESOURCE_URL).getData();
+        Assert.assertEquals(responseData, "Sum: 53");
+
+        Assert.assertFalse(jaegerExtLogLeecher.isTextFound(), "Jaeger extension not expected to enable");
         Assert.assertFalse(exceptionLogLeecher.isTextFound(), "Unexpected exception log found");
     }
 
