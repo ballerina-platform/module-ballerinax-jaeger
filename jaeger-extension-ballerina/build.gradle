@@ -109,6 +109,7 @@ def tomlVersion = project.version.split("-")[0]
 def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
 def originalConfig = ballerinaConfigFile.text
 def originalDependencyConfig = ballerinaDependencyFile.text
+def artifactJar = file("$project.projectDir/target/cache/${packageOrg}/${packageName}/${tomlVersion}/java11/")
 
 task updateTomlVerions {
     doLast {
@@ -243,4 +244,14 @@ publishing {
 
 build {
     dependsOn ballerinaBuild
+}
+
+task extractBallerinaClassFiles(type: Copy) {
+    fileTree(artifactJar).forEach { file ->
+        from zipTree(file).matching {
+            exclude '**/tests/*'
+            include '**/*.class'
+        }
+        into "${project.rootDir.absolutePath}/build/classes"
+    }
 }

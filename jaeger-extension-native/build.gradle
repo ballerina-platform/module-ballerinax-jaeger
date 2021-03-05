@@ -66,3 +66,11 @@ publishing {
         }
     }
 }
+
+task copyJavaClassFiles(type: Copy) {
+    from("${project.buildDir}/classes") {
+        exclude '**/module-info.class'
+        include '**/*.class'
+    }
+    into "${project.rootDir.absolutePath}/build/classes"
+}
