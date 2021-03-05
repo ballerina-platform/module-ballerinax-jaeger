@@ -17,13 +17,14 @@
  */
 package io.ballerina.observe.trace.jaeger;
 
+import io.ballerina.observe.trace.jaeger.sampler.RateLimitingSampler;
 import io.ballerina.runtime.api.values.BDecimal;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.observability.tracer.spi.TracerProvider;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporter;
+import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -101,6 +102,6 @@ public class JaegerTracerProvider implements TracerProvider {
     @Override
     public ContextPropagators getPropagators() {
 
-        return ContextPropagators.create(W3CTraceContextPropagator.getInstance());
+        return ContextPropagators.create(JaegerPropagator.getInstance());
     }
 }

@@ -31,6 +31,7 @@ dependencies {
     implementation "io.opentelemetry:opentelemetry-sdk-common:${openTelemetryVersion}"
     implementation "io.opentelemetry:opentelemetry-semconv:${openTelemetrySemconvVersion}"
     implementation "io.opentelemetry:opentelemetry-exporter-jaeger-thrift:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-extension-trace-propagators:${openTelemetryVersion}"
     implementation "org.apache.thrift:libthrift:${libThriftVersion}"
     implementation "com.squareup.okhttp3:okhttp:${okHttpVersion}"
     implementation "com.squareup.okio:okio:${okIoVersion}"

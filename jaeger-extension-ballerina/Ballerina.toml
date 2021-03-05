@@ -102,3 +102,9 @@ path = "./lib/opentelemetry-exporter-jaeger-thrift-@opentelemetry.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-exporter-jaeger-thrift"
 version = "@opentelemetry.version@"
+
+[[platform.java11.dependency]]
+path = "./lib/opentelemetry-extension-trace-propagators-@opentelemetry.version@.jar"
+groupId = "io.opentelemetry"
+artifactId = "opentelemetry-extension-trace-propagators"
+version = "@opentelemetry.version@"
