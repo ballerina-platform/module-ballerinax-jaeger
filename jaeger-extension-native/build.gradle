@@ -25,17 +25,44 @@ dependencies {
     implementation "io.jaegertracing:jaeger-core:${jaegerVersion}"
     implementation "io.jaegertracing:jaeger-thrift:${jaegerVersion}"
     implementation "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}"
-    implementation "io.opentelemetry:opentelemetry-api-metrics:${openTelemetrySemconvVersion}"
+    implementation "io.opentelemetry:opentelemetry-api-metrics:${openTelemetryAlphaVersion}"
     implementation "io.opentelemetry:opentelemetry-context:${openTelemetryVersion}"
     implementation "io.opentelemetry:opentelemetry-sdk-trace:${openTelemetryVersion}"
     implementation "io.opentelemetry:opentelemetry-sdk-common:${openTelemetryVersion}"
-    implementation "io.opentelemetry:opentelemetry-semconv:${openTelemetrySemconvVersion}"
-    implementation "io.opentelemetry:opentelemetry-exporter-jaeger-thrift:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-semconv:${openTelemetryAlphaVersion}"
+    implementation "io.opentelemetry:opentelemetry-exporter-otlp-trace:${openTelemetryVersion}"
     implementation "io.opentelemetry:opentelemetry-extension-trace-propagators:${openTelemetryVersion}"
-    implementation "org.apache.thrift:libthrift:${libThriftVersion}"
-    implementation "com.squareup.okhttp3:okhttp:${okHttpVersion}"
-    implementation "com.squareup.okio:okio:${okIoVersion}"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"
+    implementation("com.google.guava:guava:${guavaVersion}") {
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation("com.google.guava:failureaccess:${failureAccessVersion}")
+    implementation("io.grpc:grpc-api:${grpcVersion}") {
+        exclude group: 'io.grpc', module: 'grpc-context'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation("io.grpc:grpc-core:${grpcVersion}") {
+        exclude group: 'io.grpc', module: 'grpc-context'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation("io.grpc:grpc-stub:${grpcVersion}") {
+        exclude group: 'io.grpc', module: 'grpc-context'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation("io.grpc:grpc-protobuf:${grpcVersion}") {
+        exclude group: 'io.grpc', module: 'grpc-context'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation("io.grpc:grpc-protobuf-lite:${grpcVersion}") {
+        exclude group: 'io.grpc', module: 'grpc-context'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation("io.grpc:grpc-netty-shaded:${grpcVersion}") {
+        exclude group: 'io.grpc', module: 'grpc-context'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
+    implementation("io.netty:netty-handler:${nettyVersion}")
+    implementation "io.perfmark:perfmark-api:${perfmarkVersion}"
 }
 
 compileJava {

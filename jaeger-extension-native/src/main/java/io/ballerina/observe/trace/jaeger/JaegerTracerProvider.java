@@ -21,10 +21,14 @@ import io.ballerina.observe.trace.jaeger.sampler.RateLimitingSampler;
 import io.ballerina.runtime.api.values.BDecimal;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.observability.tracer.spi.TracerProvider;
+import io.grpc.ManagedChannel;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelProvider;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporter;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -33,6 +37,8 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.PrintStream;
 import java.util.concurrent.TimeUnit;
 
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME;
+
 /**
  * This is the Jaeger tracing extension class for {@link TracerProvider}.
  */
@@ -40,7 +46,7 @@ public class JaegerTracerProvider implements TracerProvider {
     private static final String TRACER_NAME = "jaeger";
     private static final PrintStream console = System.out;
 
-    static SdkTracerProvider tracerProvider;
+    static SdkTracerProviderBuilder tracerProviderBuilder;
 
     @Override
     public String getName() {
@@ -56,16 +62,17 @@ public class JaegerTracerProvider implements TracerProvider {
                                                 int reporterBufferSize) {
 
         String reporterEndpoint = agentHostname + ":" + agentPort;
-        if (!reporterEndpoint.startsWith("http")) {
-            reporterEndpoint = "http://" + reporterEndpoint;
-        }
 
-        JaegerThriftSpanExporter exporter =
-                JaegerThriftSpanExporter.builder()
-                        .setEndpoint(reporterEndpoint)
-                        .build();
+        ManagedChannel jaegerChannel = new NettyChannelProvider()
+                .builderForTarget(reporterEndpoint)
+                .usePlaintext()
+                .build();
 
-        SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder()
+        OtlpGrpcSpanExporter exporter = OtlpGrpcSpanExporter.builder()
+                .setChannel(jaegerChannel)
+                .build();
+
+        tracerProviderBuilder = SdkTracerProvider.builder()
                 .addSpanProcessor(BatchSpanProcessor
                         .builder(exporter)
                         .setMaxExportBatchSize(reporterBufferSize)
@@ -89,14 +96,15 @@ public class JaegerTracerProvider implements TracerProvider {
                 break;
         }
 
-        tracerProvider = tracerProviderBuilder.build();
         console.println("ballerina: started publishing traces to Jaeger on " + reporterEndpoint);
     }
 
     @Override
     public Tracer getTracer(String serviceName) {
 
-        return tracerProvider.get(serviceName);
+        return tracerProviderBuilder.setResource(
+                Resource.create(Attributes.of(SERVICE_NAME, serviceName)))
+                .build().get(serviceName);
     }
 
     @Override
