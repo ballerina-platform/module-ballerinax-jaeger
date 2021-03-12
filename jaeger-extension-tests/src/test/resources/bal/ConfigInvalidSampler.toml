@@ -1,0 +1,6 @@
+[ballerina.observe]
+tracingEnabled=true
+tracingProvider="jaeger"
+
+[ballerinax.jaeger]
+samplerType="invalid"

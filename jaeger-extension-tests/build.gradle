@@ -144,39 +144,3 @@ test {
         suites 'src/test/resources/testng.xml'
     }
 }
-
-def nativeModuleDir = "${rootProject.projectDir}/jaeger-extension-native"
-def nativeModuleClasses = "${nativeModuleDir}/build/classes/java/main"
-def nativeModuleResources = "${nativeModuleDir}/build/resources/main"
-def nativeModuleSources = "${nativeModuleDir}/src/main/java"
-
-jacocoTestReport {
-    dependsOn test
-
-    reports {
-        html.enabled true
-        xml.enabled true
-    }
-
-    afterEvaluate {
-        classDirectories.setFrom(file(nativeModuleClasses), file(nativeModuleResources))
-        sourceDirectories.setFrom(file(nativeModuleSources))
-    }
-}
-
-jacocoTestCoverageVerification {
-    dependsOn jacocoTestReport
-
-    violationRules {
-        rule {
-            limit {
-                minimum = 0.80
-            }
-        }
-    }
-
-    afterEvaluate {
-        classDirectories.setFrom(file(nativeModuleClasses), file(nativeModuleResources))
-        sourceDirectories.setFrom(file(nativeModuleSources))
-    }
-}
