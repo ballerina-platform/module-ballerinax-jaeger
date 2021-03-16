@@ -28,6 +28,7 @@ jobs:
           fail_ci_if_error: true
 
   windows-build:
+    if: false # because there is no opentelemetry-jaeger-executable available
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2

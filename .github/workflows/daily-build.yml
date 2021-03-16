@@ -32,7 +32,8 @@ jobs:
 
   windows-build:
     runs-on: windows-latest
-    if: github.repository_owner == 'ballerina-platform'
+    if: false # because there is no opentelemetry-jaeger-executable available # uncomment following line when enabling
+    # if: github.repository_owner == 'ballerina-platform'
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
