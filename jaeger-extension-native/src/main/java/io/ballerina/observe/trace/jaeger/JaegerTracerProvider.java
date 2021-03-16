@@ -104,7 +104,7 @@ public class JaegerTracerProvider implements TracerProvider {
 
         return tracerProviderBuilder.setResource(
                 Resource.create(Attributes.of(SERVICE_NAME, serviceName)))
-                .build().get(serviceName);
+                .build().get("jaeger");
     }
 
     @Override

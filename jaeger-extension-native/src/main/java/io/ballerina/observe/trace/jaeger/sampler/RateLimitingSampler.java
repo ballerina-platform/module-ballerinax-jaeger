@@ -4,7 +4,6 @@
  */
 package io.ballerina.observe.trace.jaeger.sampler;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
@@ -16,9 +15,6 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 
 import java.util.List;
 
-import static io.opentelemetry.api.common.AttributeKey.doubleKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-
 /**
  * This class is copied from https://github.com/open-telemetry/opentelemetry-java/blob/v1.0.0/sdk-extensions/
  * jaeger-remote-sampler/src/main/java/io/opentelemetry/sdk/extension/trace/jaeger/sampler/RateLimitingSampler.java.
@@ -26,8 +22,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
  */
 public class RateLimitingSampler implements Sampler {
     static final String TYPE = "ratelimiting";
-    static final AttributeKey<String> SAMPLER_TYPE = stringKey("sampler.type");
-    static final AttributeKey<Double> SAMPLER_PARAM = doubleKey("sampler.param");
 
     private final double maxTracesPerSecond;
     private final RateLimiter rateLimiter;
@@ -43,8 +37,7 @@ public class RateLimitingSampler implements Sampler {
         this.maxTracesPerSecond = maxTracesPerSecond;
         double maxBalance = maxTracesPerSecond < 1.0 ? 1.0 : maxTracesPerSecond;
         this.rateLimiter = new RateLimiter(maxTracesPerSecond, maxBalance, SystemClock.getInstance());
-        Attributes attributes =
-                Attributes.of(SAMPLER_TYPE, TYPE, SAMPLER_PARAM, (double) maxTracesPerSecond);
+        Attributes attributes = Attributes.empty();
         this.onSamplingResult = SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE, attributes);
         this.offSamplingResult = SamplingResult.create(SamplingDecision.DROP, attributes);
     }
