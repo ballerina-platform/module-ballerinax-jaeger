@@ -62,7 +62,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
     private static final String JAEGER_EXTENSION_LOG_PREFIX = "ballerina: started publishing traces to Jaeger on ";
     private static final String SAMPLE_SERVER_LOG = "[ballerina/http] started HTTP/WS listener 0.0.0.0:9091";
-    private static final String SAMPLE_SERVER_NAME = "$anon_._svc_0";
+    private static final String SAMPLE_SERVER_NAME = "/test";
     private static final String JAEGER_PROCESS_ID = "p1";
 
     @BeforeMethod
