@@ -21,7 +21,7 @@ import java.util.List;
  * This sampler uses a leaky bucket rate limiter to ensure that traces are sampled with a certain constant rate.
  */
 public class RateLimitingSampler implements Sampler {
-    static final String TYPE = "ratelimiting";
+    public static final String TYPE = "ratelimiting";
 
     private final double maxTracesPerSecond;
     private final RateLimiter rateLimiter;

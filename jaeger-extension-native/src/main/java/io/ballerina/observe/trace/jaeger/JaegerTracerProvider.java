@@ -79,24 +79,25 @@ public class JaegerTracerProvider implements TracerProvider {
                         .setExporterTimeout(reporterFlushInterval, TimeUnit.MILLISECONDS)
                         .build());
 
+        tracerProviderBuilder.setSampler(selectSampler(samplerType, samplerParam));
+
+        console.println("ballerina: started publishing traces to Jaeger on " + reporterEndpoint);
+    }
+
+    private static Sampler selectSampler(BString samplerType, BDecimal samplerParam) {
         switch (samplerType.getValue()) {
             default:
             case "const":
                 if (samplerParam.value().intValue() == 0) {
-                    tracerProviderBuilder.setSampler(Sampler.alwaysOff());
+                    return Sampler.alwaysOff();
                 } else {
-                    tracerProviderBuilder.setSampler(Sampler.alwaysOn());
+                    return Sampler.alwaysOn();
                 }
-                break;
             case "probabilistic":
-                tracerProviderBuilder.setSampler(Sampler.traceIdRatioBased(samplerParam.value().doubleValue()));
-                break;
-            case "ratelimiting":
-                tracerProviderBuilder.setSampler(new RateLimitingSampler(samplerParam.value().intValue()));
-                break;
+                return Sampler.traceIdRatioBased(samplerParam.value().doubleValue());
+            case RateLimitingSampler.TYPE:
+                return new RateLimitingSampler(samplerParam.value().intValue());
         }
-
-        console.println("ballerina: started publishing traces to Jaeger on " + reporterEndpoint);
     }
 
     @Override
