@@ -117,7 +117,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
         String configFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), configFilename).toFile().getAbsolutePath();
         Map<String, String> env = new HashMap<>();
-        env.put("BALCONFIGFILE", configFile);
+        env.put("BAL_CONFIG_FILES", configFile);
 
         final String balFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), "01_http_svc_test.bal").toFile()
                 .getAbsolutePath();
@@ -298,7 +298,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
         String configFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), "ConfigInvalidProvider.toml").toFile()
                 .getAbsolutePath();
         Map<String, String> env = new HashMap<>();
-        env.put("BALCONFIGFILE", configFile);
+        env.put("BAL_CONFIG_FILES", configFile);
 
         final String balFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), "01_http_svc_test.bal").toFile()
                 .getAbsolutePath();
