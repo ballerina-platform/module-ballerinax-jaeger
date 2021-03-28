@@ -56,7 +56,7 @@ public class ProcessJaegerServer implements JaegerServer {
         }
         String processorFlag;
         switch (protocol) {
-            case UDP_COMPACT_THRIFT:
+            case OTL_GRPC:
                 processorFlag = "--processor.jaeger-compact.server-host-port";
                 break;
             default:

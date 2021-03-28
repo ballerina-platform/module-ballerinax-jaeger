@@ -18,6 +18,7 @@
 package io.ballerina.observe.trace.jaeger.backend;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
@@ -31,12 +32,13 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Container based Jaeger Server.
- *
+ * <p>
  * This is a Jaeger server implementation based on a linux Jaeger container.
  */
 public class ContainerizedJaegerServer implements JaegerServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(ContainerizedJaegerServer.class);
-    private static final String JAEGER_IMAGE = "jaegertracing/all-in-one:1.21.0";
+    private static final String JAEGER_IMAGE = "jaegertracing/opentelemetry-all-in-one:latest";
+    private static final int API_PORT = 16686;
 
     private DockerClient dockerClient;
     private String jaegerContainerId;
@@ -64,17 +66,18 @@ public class ContainerizedJaegerServer implements JaegerServer {
         }
         int targetPort;
         switch (protocol) {
-            case UDP_COMPACT_THRIFT:
-                targetPort = 6831;
+            case OTL_GRPC:
+                targetPort = 55680;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown Jaeger Protocol type " + protocol);
         }
         jaegerContainerId = dockerClient.createContainerCmd(JAEGER_IMAGE)
                 .withName("ballerina-test-jaeger-" + System.currentTimeMillis())
+                .withExposedPorts(new ExposedPort(API_PORT), new ExposedPort(targetPort))
                 .withHostConfig(HostConfig.newHostConfig()
-                        .withPortBindings(PortBinding.parse("16686:16686/tcp"),
-                                PortBinding.parse(interfaceIP + ":" + udpBindPort + ":" + targetPort + "/udp")))
+                        .withPortBindings(PortBinding.parse(interfaceIP + ":" + API_PORT + ":" + API_PORT + "/tcp"),
+                                PortBinding.parse(interfaceIP + ":" + udpBindPort + ":" + targetPort + "/tcp")))
                 .exec()
                 .getId();
         dockerClient.startContainerCmd(jaegerContainerId).exec();

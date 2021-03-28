@@ -4,4 +4,4 @@ tracingProvider="jaeger"
 
 [ballerinax.jaeger]
 samplerType="ratelimiting"
-samplerParam=1.0
+samplerParam=3.0
