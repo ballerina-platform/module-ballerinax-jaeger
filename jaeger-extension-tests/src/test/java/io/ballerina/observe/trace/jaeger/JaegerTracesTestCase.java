@@ -41,13 +41,11 @@ import java.lang.reflect.Type;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static io.ballerina.runtime.observability.ObservabilityConstants.DEFAULT_SERVICE_NAME;
 
@@ -62,7 +60,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
     private static final String JAEGER_EXTENSION_LOG_PREFIX = "ballerina: started publishing traces to Jaeger on ";
     private static final String SAMPLE_SERVER_LOG = "[ballerina/http] started HTTP/WS listener 0.0.0.0:9091";
-    private static final String SAMPLE_SERVER_NAME = "$anon_._svc_0";
+    private static final String SAMPLE_SERVER_NAME = "/test";
     private static final String JAEGER_PROCESS_ID = "p1";
 
     @BeforeMethod
@@ -78,30 +76,19 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
     @DataProvider(name = "test-jaeger-metrics-data")
     public Object[][] getTestJaegerMetricsData() {
-        JaegerTag defaultSamplerTypeTag = new JaegerTag("sampler.type", "string", "const");
-        JaegerTag defaultSamplerParamTag = new JaegerTag("sampler.param", "bool", "true");
         return new Object[][]{
-                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigDefault.toml",
-                        defaultSamplerTypeTag, defaultSamplerParamTag},
-                {"127.0.0.1", 16831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigAgent.toml",
-                        defaultSamplerTypeTag, defaultSamplerParamTag},
-                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigInvalidSampler.toml",
-                        defaultSamplerTypeTag, defaultSamplerParamTag},
-                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigSamplerConst.toml",
-                        new JaegerTag("sampler.type", "string", "const"),
-                        new JaegerTag("sampler.param", "bool", "true")},
-                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigSamplerProbabilistic.toml",
-                        new JaegerTag("sampler.type", "string", "probabilistic"),
-                        new JaegerTag("sampler.param", "float64", "1")},
-                {"localhost", 6831, JaegerServerProtocol.UDP_COMPACT_THRIFT, "ConfigSamplerRatelimiting.toml",
-                        new JaegerTag("sampler.type", "string", "ratelimiting"),
-                        new JaegerTag("sampler.param", "float64", "1")}
+                {"localhost", 55680, JaegerServerProtocol.OTL_GRPC, "ConfigDefault.toml"},
+                {"127.0.0.1", 16831, JaegerServerProtocol.OTL_GRPC, "ConfigAgent.toml"},
+                {"localhost", 55680, JaegerServerProtocol.OTL_GRPC, "ConfigInvalidSampler.toml"},
+                {"localhost", 55680, JaegerServerProtocol.OTL_GRPC, "ConfigSamplerConst.toml"},
+                {"localhost", 55680, JaegerServerProtocol.OTL_GRPC, "ConfigSamplerProbabilistic.toml"},
+                {"localhost", 55680, JaegerServerProtocol.OTL_GRPC, "ConfigSamplerRatelimiting.toml"}
         };
     }
 
     @Test(dataProvider = "test-jaeger-metrics-data")
     public void testJaegerMetrics(String host, int jaegerReportAddress, JaegerServerProtocol jaegerReportProtocol,
-                                  String configFilename, JaegerTag samplerTypeTag, JaegerTag samplerParamTag)
+                                  String configFilename)
             throws Exception {
         jaegerServer.startServer(host, jaegerReportAddress, jaegerReportProtocol);
 
@@ -117,7 +104,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
         String configFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), configFilename).toFile().getAbsolutePath();
         Map<String, String> env = new HashMap<>();
-        env.put("BALCONFIGFILE", configFile);
+        env.put("BAL_CONFIG_FILES", configFile);
 
         final String balFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), "01_http_svc_test.bal").toFile()
                 .getAbsolutePath();
@@ -132,7 +119,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
         String responseData = HttpClientRequest.doGet(TEST_RESOURCE_URL).getData();
         Assert.assertEquals(responseData, "Sum: 53");
         long endTimeMicroseconds = (Calendar.getInstance().getTimeInMillis() + 1) * 1000;
-        Thread.sleep(3000);
+        Thread.sleep(12000);
 
         // Read services from Jaeger query endpoint
         HttpResponse servicesQueryHttpResponse = HttpClientRequest.doGet("http://localhost:16686/api/services");
@@ -188,9 +175,8 @@ public class JaegerTracesTestCase extends BaseTestCase {
                 new JaegerTag("src.position", "string", span1Position),
                 new JaegerTag("src.resource.path", "string", "/sum"),
                 new JaegerTag("http.method", "string", "GET"),
-                new JaegerTag("internal.span.format", "string", "proto"),
-                samplerTypeTag,
-                samplerParamTag
+                new JaegerTag("otlp.instrumentation.library.name", "string", "jaeger"),
+                new JaegerTag("status.code", "int64", "0")
         )));
 
         String span2Position = "01_http_svc_test.bal:24:19";
@@ -214,7 +200,8 @@ public class JaegerTracesTestCase extends BaseTestCase {
                 new JaegerTag("entrypoint.function.module", "string", "$anon/.:0.0.0"),
                 new JaegerTag("src.position", "string", span2Position),
                 new JaegerTag("src.function.name", "string", "getSum"),
-                new JaegerTag("internal.span.format", "string", "proto")
+                new JaegerTag("otlp.instrumentation.library.name", "string", "jaeger"),
+                new JaegerTag("status.code", "int64", "0")
         )));
 
         String span3Position = "01_http_svc_test.bal:28:20";
@@ -240,19 +227,14 @@ public class JaegerTracesTestCase extends BaseTestCase {
                 new JaegerTag("src.position", "string", span3Position),
                 new JaegerTag("src.client.remote", "string", "true"),
                 new JaegerTag("src.function.name", "string", "respond"),
-                new JaegerTag("internal.span.format", "string", "proto")
+                new JaegerTag("otlp.instrumentation.library.name", "string", "jaeger"),
+                new JaegerTag("status.code", "int64", "0")
         )));
 
         Assert.assertTrue(jaegerTrace.getProcesses().containsKey(JAEGER_PROCESS_ID),
                 "expected key \"" + JAEGER_PROCESS_ID + "\" not found");
         JaegerProcess jaegerProcess = jaegerTrace.getProcesses().get(JAEGER_PROCESS_ID);
         Assert.assertEquals(jaegerProcess.getServiceName(), SAMPLE_SERVER_NAME);
-        Assert.assertEquals(jaegerProcess.getTags().stream().map(JaegerTag::getKey).collect(Collectors.toSet()),
-                new HashSet<>(Arrays.asList("hostname", "ip", "jaeger.version")));
-        Assert.assertEquals(jaegerProcess.getTags().stream().map(JaegerTag::getType).collect(Collectors.toSet()),
-                new HashSet<>(Collections.singletonList("string")));
-        Assert.assertTrue(jaegerProcess.getTags().contains(new JaegerTag("jaeger.version", "string", "Java-0.31.0")),
-                "expected process tag \"jaeger.version\" not found");
 
         Assert.assertFalse(errorLogLeecher.isTextFound(), "Unexpected error log found");
         Assert.assertFalse(exceptionLogLeecher.isTextFound(), "Unexpected exception log found");
@@ -298,7 +280,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
         String configFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), "ConfigInvalidProvider.toml").toFile()
                 .getAbsolutePath();
         Map<String, String> env = new HashMap<>();
-        env.put("BALCONFIGFILE", configFile);
+        env.put("BAL_CONFIG_FILES", configFile);
 
         final String balFile = Paths.get(RESOURCES_DIR.getAbsolutePath(), "01_http_svc_test.bal").toFile()
                 .getAbsolutePath();
@@ -319,7 +301,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
      * Find a span from a jaeger trace by position ID.
      *
      * @param jaegerTrace The jaeger trace in which the spans should be searched
-     * @param positionID The position ID of the span
+     * @param positionID  The position ID of the span
      * @return The found span or null otherwise
      */
     private JaegerSpan findSpan(JaegerTrace jaegerTrace, String positionID) {
