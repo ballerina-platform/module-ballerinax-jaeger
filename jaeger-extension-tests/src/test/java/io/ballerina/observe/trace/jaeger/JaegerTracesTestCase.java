@@ -168,7 +168,9 @@ public class JaegerTracesTestCase extends BaseTestCase {
                 new JaegerTag("entrypoint.function.module", "string", "$anon/.:0.0.0"),
                 new JaegerTag("http.url", "string", "/test/sum"),
                 new JaegerTag("src.resource.accessor", "string", "get"),
-                new JaegerTag("entrypoint.function.position", "string", span1Position),
+                new JaegerTag("entrypoint.service.name", "string", SAMPLE_SERVER_NAME),
+                new JaegerTag("entrypoint.function.name", "string", "/sum"),
+                new JaegerTag("entrypoint.resource.accessor", "string", "get"),
                 new JaegerTag("protocol", "string", "http"),
                 new JaegerTag("src.service.resource", "string", "true"),
                 new JaegerTag("span.kind", "string", "server"),
@@ -193,7 +195,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
         Assert.assertTrue(span2.getDuration() < endTimeMicroseconds - startTimeMicroseconds,
                 "span with position ID \"" + span2Position + "\" duration not between start and end time");
         Assert.assertEquals(span2.getTags(), new HashSet<>(Arrays.asList(
-                new JaegerTag("entrypoint.function.position", "string", span1Position),
+                new JaegerTag("entrypoint.function.name", "string", "/sum"),
                 new JaegerTag("src.module", "string", "$anon/.:0.0.0"),
                 new JaegerTag("span.kind", "string", "client"),
                 new JaegerTag("src.object.name", "string", "$anon/./ObservableAdder"),
@@ -219,7 +221,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
                 "span with position ID \"" + span3Position + "\" duration not between start and end time");
         Assert.assertEquals(span3.getTags(), new HashSet<>(Arrays.asList(
                 new JaegerTag("http.status_code", "string", "200"),
-                new JaegerTag("entrypoint.function.position", "string", span1Position),
+                new JaegerTag("entrypoint.function.name", "string", "/sum"),
                 new JaegerTag("src.module", "string", "$anon/.:0.0.0"),
                 new JaegerTag("span.kind", "string", "client"),
                 new JaegerTag("src.object.name", "string", "ballerina/http/Caller"),
