@@ -128,6 +128,7 @@ def originalConfig = ballerinaConfigFile.text
 def originalDependencyConfig = ballerinaDependencyFile.text
 def artifactJar = file("$project.projectDir/target/cache/${packageOrg}/${packageName}/${tomlVersion}/java11/")
 def platform = "java11"
+def distributionBinPath = "${project.buildDir.absolutePath}/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
 
 def stripBallerinaExtensionVersion(String extVersion) {
     if (extVersion.matches(project.ext.timestampedVersionRegex)) {
@@ -192,8 +193,6 @@ task ballerinaBuild {
     finalizedBy(revertTomlFile)
 
     doLast {
-        def distributionBinPath = "${project.buildDir.absolutePath}/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
-
         def additionalBuildParams = ""
         if (project.hasProperty("debug")) {
             additionalBuildParams = "--debug ${project.findProperty("debug")}"
@@ -222,20 +221,6 @@ task ballerinaBuild {
             into file("$artifactCacheParent/cache/")
         }
 
-        // Publish to central
-        if (!project.version.endsWith('-SNAPSHOT') && ballerinaCentralAccessToken != null && project.hasProperty("publishToCentral")) {
-            println("Publishing to the ballerina central..")
-            exec {
-                workingDir project.projectDir
-                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
-                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                    commandLine 'cmd', '/c', "$distributionBinPath/bal.bat push && exit %%ERRORLEVEL%%"
-                } else {
-                    commandLine 'sh', '-c', "$distributionBinPath/bal push"
-                }
-            }
-
-        }
         // Doc creation and packing
         exec {
             workingDir project.projectDir
@@ -266,6 +251,34 @@ artifacts {
     distribution createArtifactZip
 }
 
+task ballerinaPublish {
+    dependsOn updateTomlVerions
+    dependsOn ballerinaBuild
+    dependsOn ":${packageName}-extension-tests:test"
+
+    finalizedBy(revertTomlFile)
+
+    doLast {
+        if (project.version.endsWith('-SNAPSHOT')) {
+            return
+        }
+        if (ballerinaCentralAccessToken != null) {
+            println("Publishing to the ballerina central...")
+            exec {
+                workingDir project.projectDir
+                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    commandLine 'cmd', '/c', "$distributionBinPath/bal.bat push && exit %%ERRORLEVEL%%"
+                } else {
+                    commandLine 'sh', '-c', "$distributionBinPath/bal push"
+                }
+            }
+        } else {
+            throw new InvalidUserDataException("Central Access Token is not present")
+        }
+    }
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -287,6 +300,10 @@ publishing {
 
 build {
     dependsOn ballerinaBuild
+}
+
+publish {
+    dependsOn ballerinaPublish
 }
 
 task extractBallerinaClassFiles(type: Copy) {
