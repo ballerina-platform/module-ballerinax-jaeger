@@ -31,5 +31,5 @@ tracingProvider="jaeger"
 
 [ballerinax.jaeger]
 agentHostname="127.0.0.1"  # Optional Configuration. Default value is localhost
-agentPort=6831             # Optional Configuration. Default value is 6831
+agentPort=55680             # Optional Configuration. Default value is 55680
 ```
