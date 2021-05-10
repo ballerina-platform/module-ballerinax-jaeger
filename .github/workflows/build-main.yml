@@ -28,8 +28,15 @@ jobs:
           packagePublishRepo: ${{ github.repository }}
         run: |
           ./gradlew clean build publish --stacktrace --scan --console=plain --no-daemon
-          ./gradlew codeCoverageReport
+          ./gradlew codeCoverageReport --console=plain --no-daemon
       - name: Upload Coverage Report
         uses: codecov/codecov-action@v1
         with:
           fail_ci_if_error: true
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: distribution
+          path: |
+            jaeger-extension-ballerina/build/distributions/jaeger-extension-ballerina-*.zip
+          if-no-files-found: error
