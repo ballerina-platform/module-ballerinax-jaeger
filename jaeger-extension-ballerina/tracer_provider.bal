@@ -21,12 +21,12 @@ import ballerina/observe;
 const PROVIDER_NAME = "jaeger";
 const DEFAULT_SAMPLER_TYPE = "const";
 
-final configurable string agentHostname = "localhost";
-final configurable int agentPort = 55680;
-final configurable string samplerType = "const";
-final configurable decimal samplerParam = 1;
-final configurable int reporterFlushInterval = 1000;
-final configurable int reporterBufferSize = 10000;
+configurable string agentHostname = "localhost";
+configurable int agentPort = 55680;
+configurable string samplerType = "const";
+configurable decimal samplerParam = 1;
+configurable int reporterFlushInterval = 1000;
+configurable int reporterBufferSize = 10000;
 
 function init() {
     if (observe:isTracingEnabled() && observe:getTracingProvider() == PROVIDER_NAME) {
