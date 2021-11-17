@@ -59,7 +59,6 @@ public class JaegerTracesTestCase extends BaseTestCase {
     private static final String TEST_RESOURCE_URL = "http://localhost:9091/test/sum";
 
     private static final String JAEGER_EXTENSION_LOG_PREFIX = "ballerina: started publishing traces to Jaeger on ";
-    private static final String SAMPLE_SERVER_LOG = "[ballerina/http] started HTTP/WS listener 0.0.0.0:9091";
     private static final String SAMPLE_SERVER_NAME = "/test";
     private static final String JAEGER_PROCESS_ID = "p1";
 
@@ -95,8 +94,6 @@ public class JaegerTracesTestCase extends BaseTestCase {
         LogLeecher jaegerExtLogLeecher = new LogLeecher(JAEGER_EXTENSION_LOG_PREFIX + host + ":"
                 + jaegerReportAddress);
         serverInstance.addLogLeecher(jaegerExtLogLeecher);
-        LogLeecher sampleServerLogLeecher = new LogLeecher(SAMPLE_SERVER_LOG);
-        serverInstance.addLogLeecher(sampleServerLogLeecher);
         LogLeecher errorLogLeecher = new LogLeecher("error");
         serverInstance.addErrorLogLeecher(errorLogLeecher);
         LogLeecher exceptionLogLeecher = new LogLeecher("Exception");
@@ -112,7 +109,6 @@ public class JaegerTracesTestCase extends BaseTestCase {
         serverInstance.startServer(balFile, new String[]{"--observability-included"}, null, env, requiredPorts);
         Utils.waitForPortsToOpen(requiredPorts, 1000 * 60, false, "localhost");
         jaegerExtLogLeecher.waitForText(10000);
-        sampleServerLogLeecher.waitForText(1000);
 
         // Send requests to generate metrics
         long startTimeMicroseconds = Calendar.getInstance().getTimeInMillis() * 1000;
@@ -248,8 +244,6 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
     @Test
     public void testJaegerDisabled() throws Exception {
-        LogLeecher sampleServerLogLeecher = new LogLeecher(SAMPLE_SERVER_LOG);
-        serverInstance.addLogLeecher(sampleServerLogLeecher);
         LogLeecher jaegerExtLogLeecher = new LogLeecher(JAEGER_EXTENSION_LOG_PREFIX);
         serverInstance.addLogLeecher(jaegerExtLogLeecher);
         LogLeecher errorLogLeecher = new LogLeecher("error");
@@ -262,7 +256,6 @@ public class JaegerTracesTestCase extends BaseTestCase {
         int[] requiredPorts = {9091};
         serverInstance.startServer(balFile, null, null, requiredPorts);
         Utils.waitForPortsToOpen(requiredPorts, 1000 * 60, false, "localhost");
-        sampleServerLogLeecher.waitForText(10000);
 
         String responseData = HttpClientRequest.doGet(TEST_RESOURCE_URL).getData();
         Assert.assertEquals(responseData, "Sum: 53");
@@ -274,8 +267,6 @@ public class JaegerTracesTestCase extends BaseTestCase {
 
     @Test
     public void testInvalidTracingProviderName() throws Exception {
-        LogLeecher sampleServerLogLeecher = new LogLeecher(SAMPLE_SERVER_LOG);
-        serverInstance.addLogLeecher(sampleServerLogLeecher);
         LogLeecher jaegerExtLogLeecher = new LogLeecher(JAEGER_EXTENSION_LOG_PREFIX);
         serverInstance.addLogLeecher(jaegerExtLogLeecher);
         LogLeecher tracerNotFoundLog = new LogLeecher("error: tracer provider invalid not found");
@@ -294,7 +285,6 @@ public class JaegerTracesTestCase extends BaseTestCase {
         serverInstance.startServer(balFile, new String[]{"--observability-included"}, null, env, requiredPorts);
         Utils.waitForPortsToOpen(requiredPorts, 1000 * 60, false, "localhost");
         tracerNotFoundLog.waitForText(10000);
-        sampleServerLogLeecher.waitForText(10000);
 
         String responseData = HttpClientRequest.doGet(TEST_RESOURCE_URL).getData();
         Assert.assertEquals(responseData, "Sum: 53");
