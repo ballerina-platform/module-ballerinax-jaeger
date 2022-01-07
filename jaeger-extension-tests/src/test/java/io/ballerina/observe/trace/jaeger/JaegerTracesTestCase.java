@@ -173,6 +173,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
                 new JaegerTag("src.position", "string", span1Position),
                 new JaegerTag("src.resource.path", "string", "/sum"),
                 new JaegerTag("http.method", "string", "GET"),
+                new JaegerTag("http.status_code", "string", "200"),
                 new JaegerTag("otlp.instrumentation.library.name", "string", "jaeger"),
                 new JaegerTag("status.code", "int64", "0")
         )));
