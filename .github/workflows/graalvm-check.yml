@@ -49,6 +49,11 @@ jobs:
           version: 2201.6.0
 
       - name: Run Ballerina tests using the native executable
-        run: bal tests --native ./jaeger-extension-ballerina
+        run: bal test --native ./jaeger-extension-ballerina
+        env:
+          JAVA_HOME: /usr/lib/jvm/default-jvm
+
+      - name: Run Ballerina build using the native executable
+        run: bal build --native ./jaeger-extension-ballerina
         env:
           JAVA_HOME: /usr/lib/jvm/default-jvm
