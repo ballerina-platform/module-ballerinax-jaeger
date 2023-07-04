@@ -31,4 +31,7 @@
         <Field name="serverInstance"/>
         <Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
     </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP, EI_EXPOSE_REP2"/>
+    </Match>
 </FindBugsFilter>

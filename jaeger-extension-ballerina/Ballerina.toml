@@ -20,133 +20,133 @@ name = "jaeger"
 version = "@toml.version@"
 distribution = "2201.7.0"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "../jaeger-extension-native/build/libs/jaeger-extension-native-@project.version@.jar"
 groupId = "ballerina"
 artifactId = "jaeger-extension-native"
 version = "@project.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/jaeger-core-@jaeger.version@.jar"
 groupId = "io.jaegertracing"
 artifactId = "jaeger-core"
 version = "@jaeger.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/opentelemetry-api-metrics-@openTelemetryAlpha.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-api-metrics"
 version = "@openTelemetryAlpha.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/opentelemetry-sdk-trace-@opentelemetry.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-sdk-trace"
 version = "@opentelemetry.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/opentelemetry-sdk-common-@opentelemetry.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-sdk-common"
 version = "@opentelemetry.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/opentelemetry-semconv-@openTelemetryAlpha.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-semconv"
 version = "@openTelemetryAlpha.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/opentelemetry-proto-@openTelemetryAlpha.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-proto"
 version = "@openTelemetryAlpha.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/opentelemetry-exporter-otlp-trace-@opentelemetry.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-exporter-otlp-trace"
 version = "@opentelemetry.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/opentelemetry-exporter-otlp-common-@opentelemetry.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-exporter-otlp-common"
 version = "@opentelemetry.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/opentelemetry-extension-trace-propagators-@opentelemetry.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-extension-trace-propagators"
 version = "@opentelemetry.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/guava-@guava.version@.jar"
 groupId = "com.google.guava"
 artifactId = "guava"
 version = "@guava.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/failureaccess-@failureAccess.version@.jar"
 groupId = "com.google.guava"
 artifactId = "failureaccess"
 version = "@failureAccess.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/grpc-api-@grpc.version@.jar"
 groupId = "io.grpc"
 artifactId = "grpc-api"
 version = "@grpc.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/grpc-context-@grpc.version@.jar"
 groupId = "io.grpc"
 artifactId = "grpc-context"
 version = "@grpc.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/grpc-core-@grpc.version@.jar"
 groupId = "io.grpc"
 artifactId = "grpc-core"
 version = "@grpc.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/grpc-stub-@grpc.version@.jar"
 groupId = "io.grpc"
 artifactId = "grpc-stub"
 version = "@grpc.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/grpc-protobuf-@grpc.version@.jar"
 groupId = "io.grpc"
 artifactId = "grpc-protobuf"
 version = "@grpc.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/grpc-protobuf-lite-@grpc.version@.jar"
 groupId = "io.grpc"
 artifactId = "grpc-protobuf-lite"
 version = "@grpc.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/grpc-netty-shaded-@grpc.version@.jar"
 groupId = "io.grpc"
 artifactId = "grpc-netty-shaded"
 version = "@grpc.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/protobuf-java-@protobuf.version@.jar"
 groupId = "com.google.protobuf"
 artifactId = "protobuf-java"
 version = "@protobuf.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/netty-handler-@netty.version@.jar"
 groupId = "io.netty"
 artifactId = "netty-handler"
 version = "@netty.version@"
 
-[[platform.java11.dependency]]
+[[platform.java17.dependency]]
 path = "./lib/perfmark-api-@perfmark.version@.jar"
 groupId = "io.perfmark"
 artifactId = "perfmark-api"
