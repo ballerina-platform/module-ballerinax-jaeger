@@ -126,8 +126,8 @@ def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
 def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
 def originalConfig = ballerinaConfigFile.text
 def originalDependencyConfig = ballerinaDependencyFile.text
-def artifactJar = file("$project.projectDir/target/cache/${packageOrg}/${packageName}/${tomlVersion}/java11/")
-def platform = "java11"
+def artifactJar = file("$project.projectDir/target/cache/${packageOrg}/${packageName}/${tomlVersion}/java17/")
+def platform = "java17"
 def distributionBinPath = "${project.buildDir.absolutePath}/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
 
 def stripBallerinaExtensionVersion(String extVersion) {
@@ -188,6 +188,11 @@ task ballerinaBuild {
     dependsOn updateTomlVerions
     dependsOn configurations.nativeJar
     dependsOn configurations.externalJars
+    dependsOn compileJava
+    dependsOn compileTestJava
+    dependsOn jar
+    dependsOn checkstyleMain
+    dependsOn checkstyleTest
 
     inputs.dir file(project.projectDir)
     finalizedBy(revertTomlFile)
