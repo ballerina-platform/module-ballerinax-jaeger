@@ -21,6 +21,9 @@ version = "@toml.version@"
 distribution = "2201.7.0"
 
 [[platform.java17.dependency]]
+graalvmCompatible = true
+
+[[platform.java17.dependency]]
 path = "../jaeger-extension-native/build/libs/jaeger-extension-native-@project.version@.jar"
 groupId = "ballerina"
 artifactId = "jaeger-extension-native"
