@@ -38,6 +38,7 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.net.InetAddress;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -107,7 +108,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
                 .getAbsolutePath();
         int[] requiredPorts = {9091};
         serverInstance.startServer(balFile, new String[]{"--observability-included"}, null, env, requiredPorts);
-        Utils.waitForPortsToOpen(requiredPorts, 1000 * 60, false, "localhost");
+        Utils.waitForPortsToOpen(requiredPorts, 1000 * 60, false, InetAddress.getByName("localhost"));
         jaegerExtLogLeecher.waitForText(10000);
 
         // Send requests to generate metrics
@@ -256,7 +257,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
                 .getAbsolutePath();
         int[] requiredPorts = {9091};
         serverInstance.startServer(balFile, null, null, requiredPorts);
-        Utils.waitForPortsToOpen(requiredPorts, 1000 * 60, false, "localhost");
+        Utils.waitForPortsToOpen(requiredPorts, 1000 * 60, false, InetAddress.getByName("localhost"));
 
         String responseData = HttpClientRequest.doGet(TEST_RESOURCE_URL).getData();
         Assert.assertEquals(responseData, "Sum: 53");
@@ -284,7 +285,7 @@ public class JaegerTracesTestCase extends BaseTestCase {
                 .getAbsolutePath();
         int[] requiredPorts = {9091};
         serverInstance.startServer(balFile, new String[]{"--observability-included"}, null, env, requiredPorts);
-        Utils.waitForPortsToOpen(requiredPorts, 1000 * 60, false, "localhost");
+        Utils.waitForPortsToOpen(requiredPorts, 1000 * 60, false, InetAddress.getByName("localhost"));
         tracerNotFoundLog.waitForText(10000);
 
         String responseData = HttpClientRequest.doGet(TEST_RESOURCE_URL).getData();
