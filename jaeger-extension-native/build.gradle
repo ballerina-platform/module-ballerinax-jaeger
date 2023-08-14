@@ -15,7 +15,7 @@
  */
 
 plugins {
-    id 'java'
+    id 'java-library'
 }
 
 description = 'Ballerina - Jaeger Extension - Native Module'
@@ -103,6 +103,7 @@ publishing {
 }
 
 task copyJavaClassFiles(type: Copy) {
+    dependsOn(compileJava)
     from("${project.buildDir}/classes") {
         exclude '**/module-info.class'
         include '**/*.class'
