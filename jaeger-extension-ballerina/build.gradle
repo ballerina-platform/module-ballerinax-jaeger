@@ -193,6 +193,9 @@ task ballerinaBuild {
     dependsOn jar
     dependsOn checkstyleMain
     dependsOn checkstyleTest
+    dependsOn spotbugsMain
+    dependsOn spotbugsTest
+    dependsOn ":jaeger-extension-ballerina:generatePomFileForMavenJavaPublication"
 
     inputs.dir file(project.projectDir)
     finalizedBy(revertTomlFile)
@@ -260,6 +263,7 @@ task ballerinaPublish {
     dependsOn updateTomlVerions
     dependsOn ballerinaBuild
     dependsOn ":${packageName}-extension-tests:test"
+    dependsOn ":jaeger-extension-ballerina:generatePomFileForMavenJavaPublication"
 
     finalizedBy(revertTomlFile)
 
