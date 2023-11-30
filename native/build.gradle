@@ -1,0 +1,111 @@
+/*
+ * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+plugins {
+    id 'java-library'
+}
+
+description = 'Ballerina - Jaeger Extension - Native Module'
+
+dependencies {
+    implementation "org.ballerinalang:ballerina-runtime:${ballerinaLangVersion}"
+    implementation "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-context:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-sdk-trace:${openTelemetrySDKVersion}"
+    implementation "io.opentelemetry:opentelemetry-sdk-common:${openTelemetrySDKVersion}"
+    implementation "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemconvVersion}"
+    implementation "io.opentelemetry:opentelemetry-exporter-otlp-trace:${openTelemetryExporterVersion}"
+    implementation "io.opentelemetry:opentelemetry-extension-trace-propagators:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-sdk-extension-jaeger-remote-sampler:${openTelemetrySDKVersion}"
+
+    implementation("com.google.guava:guava:${guavaVersion}") {
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation("com.google.guava:failureaccess:${failureAccessVersion}")
+    implementation("io.grpc:grpc-api:${grpcVersion}") {
+        exclude group: 'io.grpc', module: 'grpc-context'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation("io.grpc:grpc-core:${grpcVersion}") {
+        exclude group: 'io.grpc', module: 'grpc-context'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation("io.grpc:grpc-stub:${grpcVersion}") {
+        exclude group: 'io.grpc', module: 'grpc-context'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation("io.grpc:grpc-protobuf:${grpcVersion}") {
+        exclude group: 'io.grpc', module: 'grpc-context'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation("io.grpc:grpc-protobuf-lite:${grpcVersion}") {
+        exclude group: 'io.grpc', module: 'grpc-context'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation("io.grpc:grpc-netty-shaded:${grpcVersion}") {
+        exclude group: 'io.grpc', module: 'grpc-context'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
+    implementation("io.netty:netty-handler:${nettyVersion}")
+    implementation "io.perfmark:perfmark-api:${perfmarkVersion}"
+}
+
+compileJava {
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', classpath.asPath,
+        ]
+        classpath = files()
+    }
+}
+
+jar {
+    manifest {
+        attributes('Implementation-Title': project.name, 'Implementation-Version': project.version)
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId project.group
+            artifactId "jaeger-extension-native"
+            version = project.version
+            artifact jar
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/${System.getenv("packagePublishRepo")}")
+            credentials {
+                username = System.getenv("packageUser")
+                password = System.getenv("packagePAT")
+            }
+        }
+    }
+}
+
+task copyJavaClassFiles(type: Copy) {
+    dependsOn(compileJava)
+    from("${project.buildDir}/classes") {
+        exclude '**/module-info.class'
+        include '**/*.class'
+    }
+    into "${project.rootDir.absolutePath}/build/classes"
+}
