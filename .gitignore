@@ -38,6 +38,7 @@ build/
 gradle-app.setting
 !gradle-wrapper.jar
 .gradletasknamecache
+.DS_Store
 
 # Ballerina
 target/
