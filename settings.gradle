@@ -26,9 +26,9 @@ include(':jaeger-extension-native')
 include(':jaeger-extension-tests')
 
 project(':build-config:checkstyle').projectDir = file('build-config/checkstyle')
-project(':jaeger-extension-ballerina').projectDir = file('jaeger-extension-ballerina')
-project(':jaeger-extension-native').projectDir = file('jaeger-extension-native')
-project(':jaeger-extension-tests').projectDir = file('jaeger-extension-tests')
+project(':jaeger-extension-ballerina').projectDir = file('ballerina')
+project(':jaeger-extension-native').projectDir = file('native')
+project(':jaeger-extension-tests').projectDir = file('tests')
 
 gradleEnterprise {
     buildScan {
