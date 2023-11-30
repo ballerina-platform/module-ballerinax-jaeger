@@ -1,8 +1,17 @@
-name: Daily build
+name: GraalVM Check
 
 on:
   schedule:
-    - cron: '30 2 * * *'
+    - cron: '30 18 * * *'
+  workflow_dispatch:
+    inputs:
+      ballerina_version:
+        description: 'Ballerina version'
+        required: true
+        default: '2201.8.3'
+
+env:
+  BALLERINA_DISTRIBUTION_VERSION: 2201.8.3   # Update this with the latest Ballerina version
 
 jobs:
   build:
@@ -10,32 +19,44 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      - name: Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
         with:
-          distribution: adopt
-          java-version: 17.0.7
-
-      # Build the project with Gradle
+          version: 'latest'
+          java-version: '17.0.7'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check GraalVM installation
+        run: |
+          echo "GRAALVM_HOME: ${{ env.GRAALVM_HOME }}"
+          echo "JAVA_HOME: ${{ env.JAVA_HOME }}"
+          native-image --version
+      - name: Set up Ballerina
+        if: github.event_name == 'workflow_dispatch'
+        uses: ballerina-platform/setup-ballerina@v1.1.0
+        with:
+          version: ${{ github.event.inputs.ballerina_version }}
+      - name: Set up Ballerina
+        if: github.event_name == 'schedule'
+        uses: ballerina-platform/setup-ballerina@v1.1.0
+        with:
+          version: ${{ env.BALLERINA_DISTRIBUTION_VERSION }}
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
       - name: Build with Gradle
         env:
-          packageUser: ${{ github.actor }}
-          packagePAT: ${{ secrets.GITHUB_TOKEN }}
+          packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
+          packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
+          JAVA_OPTS: -DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true
         run: |
-          ./gradlew clean build
-
-      # Send notification when build fails
-      - name: Notify failure
-        if: ${{ failure() }}
-        run: |
-          curl -X POST \
-          'https://api.github.com/repos/ballerina-platform/ballerina-release/dispatches' \
-          -H 'Accept: application/vnd.github.v3+json' \
-          -H 'Authorization: Bearer ${{ secrets.BALLERINA_BOT_TOKEN }}' \
-          --data "{
-            \"event_type\": \"notify-build-failure\",
-            \"client_payload\": {
-              \"repoName\": \"module-ballerinax-jaeger\"
-            }
-          }"
+          ./gradlew build
+      - name: Update dependency versions
+        run: ./gradlew :jaeger-extension-ballerina:updateTomlVerions
+        env:
+          packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
+          packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
+          JAVA_OPTS: -DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true
+      - name: Run Ballerina build using the native executable
+        run: bal build --native ./ballerina
+      - name: Run Ballerina tests using the native executable
+        run: bal test --native ./ballerina
