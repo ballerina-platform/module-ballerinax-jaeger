@@ -3,6 +3,10 @@ name: Publish to the Ballerina central
 on:
   workflow_dispatch:
     inputs:
+      ballerina_version:
+        description: 'Ballerina version'
+        required: true
+        default: '2201.8.3'
       environment:
         type: choice
         description: Select environment
@@ -23,18 +27,20 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 17.0.7
+      - name: Set up Ballerina
+        uses: ballerina-platform/setup-ballerina@v1.1.0
+        with:
+          version: ${{ github.event.inputs.ballerina_version }}
       - name: Build with Gradle
         env:
           packageUser: ${{ github.actor }}
           packagePAT: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew build -x check -x test
-      - name: Create lib directory if not exists
-        run: mkdir -p jaeger-extension-ballerina/lib
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'rootfs'
-          scan-ref: '/github/workspace/jaeger-extension-ballerina/lib'
+          scan-ref: '/github/workspace/ballerina/lib'
           format: 'table'
           timeout: '10m0s'
           exit-code: '1'

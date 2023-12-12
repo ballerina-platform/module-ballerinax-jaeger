@@ -1,0 +1,58 @@
+// Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+//
+// WSO2 LLC. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+import ballerina/toml;
+
+const string DEPENDENCIES_TOML_FILE = "Dependencies.toml";
+
+type DependenciesTomlData record {|
+    ProjectDetails ballerina;
+    Package[] package;
+|};
+
+type Package record {|
+    string org;
+    string name;
+    string version;
+    string scope?;
+    Dependency[] dependencies?;
+    Module[] modules?;
+|};
+
+type Module record {|
+    string org;
+    string packageName;
+    string moduleName;
+|};
+
+type Dependency record {|
+    string org;
+    string name;
+|};
+
+type ProjectDetails record {|
+    string dependencies\-toml\-version;
+    string distribution\-version;
+|};
+
+public function getHTTPModuleVersion() returns string|error {
+    map<json> tomlFile = check toml:readFile(DEPENDENCIES_TOML_FILE);
+    DependenciesTomlData dependenciesTomlData = check (tomlFile.toJson()).fromJsonWithType();
+    Package[] packages = dependenciesTomlData.package;
+    Package httpModuleData = packages.filter(package => package.name == "http")[0];
+
+    return httpModuleData.version;
+}
