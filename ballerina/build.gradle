@@ -34,6 +34,7 @@ configurations {
 dependencies {
     nativeJar project(':jaeger-extension-native')
 
+    externalJars "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}"
     externalJars "io.opentelemetry:opentelemetry-context:${openTelemetryVersion}"
     externalJars "io.opentelemetry:opentelemetry-sdk-trace:${openTelemetryVersion}"
     externalJars "io.opentelemetry:opentelemetry-sdk-common:${openTelemetryVersion}"

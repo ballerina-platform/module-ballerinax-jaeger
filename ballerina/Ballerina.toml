@@ -30,6 +30,12 @@ artifactId = "jaeger-extension-native"
 version = "@project.version@"
 
 [[platform.java17.dependency]]
+path = "./lib/opentelemetry-api-@opentelemetry.version@.jar"
+groupId = "io.opentelemetry"
+artifactId = "opentelemetry-api"
+version = "@opentelemetry.version@"
+
+[[platform.java17.dependency]]
 path = "./lib/opentelemetry-sdk-trace-@opentelemetrySDK.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-sdk-trace"
