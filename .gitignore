@@ -42,3 +42,4 @@ gradle-app.setting
 
 # Ballerina
 target/
+bin/
