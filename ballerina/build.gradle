@@ -189,6 +189,20 @@ task ballerinaBuild {
             from file("$project.projectDir/target/apidocs/${packageName}")
             into file("$project.buildDir/docs_parent/docs/${packageName}")
         }
+
+        boolean publishToCentral = project.hasProperty('publishToCentral') ? project.publishToCentral.toBoolean() : false
+        if (publishToCentral) {
+            if (project.version.toString().split("-").length > 1) {
+                return
+            }
+            if (ballerinaCentralAccessToken != null) {
+                println("Publishing to the ballerina central...")
+                def env = "JAVA_OPTS -DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                executeBalCommand ("push", "${project.projectDir}", env)
+            } else {
+                throw new InvalidUserDataException("Central Access Token is not present")
+            }
+        }
     }
 
     outputs.dir artifactCacheParent
