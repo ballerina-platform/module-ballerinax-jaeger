@@ -18,64 +18,58 @@
 org = "ballerinax"
 name = "jaeger"
 version = "@toml.version@"
-distribution = "2201.7.0"
+distribution = "2201.9.0"
 
 [platform.java17]
 graalvmCompatible = true
 
 [[platform.java17.dependency]]
-path = "../jaeger-extension-native/build/libs/jaeger-extension-native-@project.version@.jar"
+path = "../native/build/libs/jaeger-extension-native-@project.version@.jar"
 groupId = "ballerina"
 artifactId = "jaeger-extension-native"
 version = "@project.version@"
 
 [[platform.java17.dependency]]
-path = "./lib/jaeger-core-@jaeger.version@.jar"
-groupId = "io.jaegertracing"
-artifactId = "jaeger-core"
-version = "@jaeger.version@"
-
-[[platform.java17.dependency]]
-path = "./lib/opentelemetry-api-metrics-@openTelemetryAlpha.version@.jar"
+path = "./lib/opentelemetry-api-@opentelemetry.version@.jar"
 groupId = "io.opentelemetry"
-artifactId = "opentelemetry-api-metrics"
-version = "@openTelemetryAlpha.version@"
+artifactId = "opentelemetry-api"
+version = "@opentelemetry.version@"
 
 [[platform.java17.dependency]]
-path = "./lib/opentelemetry-sdk-trace-@opentelemetry.version@.jar"
+path = "./lib/opentelemetry-sdk-trace-@opentelemetrySDK.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-sdk-trace"
-version = "@opentelemetry.version@"
+version = "@opentelemetrySDK.version@"
 
 [[platform.java17.dependency]]
-path = "./lib/opentelemetry-sdk-common-@opentelemetry.version@.jar"
+path = "./lib/opentelemetry-sdk-common-@opentelemetrySDK.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-sdk-common"
-version = "@opentelemetry.version@"
+version = "@opentelemetrySDK.version@"
 
 [[platform.java17.dependency]]
-path = "./lib/opentelemetry-semconv-@openTelemetryAlpha.version@.jar"
+path = "./lib/opentelemetry-semconv-@opentelemetrySemconv.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-semconv"
-version = "@openTelemetryAlpha.version@"
+version = "@opentelemetrySemconv.version@"
 
 [[platform.java17.dependency]]
-path = "./lib/opentelemetry-proto-@openTelemetryAlpha.version@.jar"
+path = "./lib/opentelemetry-proto-@opentelemetryProto.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-proto"
-version = "@openTelemetryAlpha.version@"
+version = "@opentelemetryProto.version@"
 
 [[platform.java17.dependency]]
-path = "./lib/opentelemetry-exporter-otlp-trace-@opentelemetry.version@.jar"
+path = "./lib/opentelemetry-exporter-otlp-trace-@opentelemetryExporter.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-exporter-otlp-trace"
-version = "@opentelemetry.version@"
+version = "@opentelemetryExporter.version@"
 
 [[platform.java17.dependency]]
-path = "./lib/opentelemetry-exporter-otlp-common-@opentelemetry.version@.jar"
+path = "./lib/opentelemetry-exporter-otlp-common-@opentelemetryExporter.version@.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-exporter-otlp-common"
-version = "@opentelemetry.version@"
+version = "@opentelemetryExporter.version@"
 
 [[platform.java17.dependency]]
 path = "./lib/opentelemetry-extension-trace-propagators-@opentelemetry.version@.jar"

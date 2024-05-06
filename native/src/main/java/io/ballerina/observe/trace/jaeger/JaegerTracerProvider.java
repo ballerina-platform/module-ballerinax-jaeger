@@ -37,7 +37,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.PrintStream;
 import java.util.concurrent.TimeUnit;
 
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME;
+import static io.opentelemetry.semconv.ResourceAttributes.SERVICE_NAME;
 
 /**
  * This is the Jaeger tracing extension class for {@link TracerProvider}.

@@ -1,0 +1,205 @@
+/*
+ * Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+import org.apache.tools.ant.taskdefs.condition.Os
+
+description = 'Ballerina - Jaeger Extension - Ballerina Tests'
+
+configurations {
+    nativeJar {
+        transitive false
+    }
+    externalJars {
+        transitive false
+    }
+    distribution {
+        canBeConsumed true
+        canBeResolved false
+    }
+}
+
+clean {
+    delete "${project.projectDir}/target"
+    delete "${project.projectDir}/Ballerina.lock"
+    delete "${project.projectDir}/ballerina-internal.log"
+}
+
+jar {
+    manifest {
+        attributes('Implementation-Title': project.name, 'Implementation-Version': project.version)
+    }
+}
+
+def groupParams = ""
+def disableGroups = ""
+def windowsDisableGroups = "--disable-groups disabledOnWindows"
+def debugParams = ""
+def balJavaDebugParam = ""
+def testParams = ""
+def nativeFlag = ""
+
+def packageOrg = "ballerinax"
+def packageName = "jaeger"
+def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
+def testPackages = ["jaeger-server-tests"]
+
+def jaegerServerTestConfigFile = new File("${project.projectDir}/jaeger-server-tests/Ballerina.toml")
+def jaegerServerTestOriginalConfig = jaegerServerTestConfigFile.text
+def jaegerServerTestDependenciesFile = new File("${project.projectDir}/jaeger-server-tests/Dependencies.toml")
+def jaegerServerTestOriginalDependencies = jaegerServerTestDependenciesFile.text
+
+def stripBallerinaExtensionVersion(String extVersion) {
+    if (extVersion.matches(project.ext.timestampedVersionRegex)) {
+        def splitVersion = extVersion.split('-');
+        if (splitVersion.length > 3) {
+            def strippedValues = splitVersion[0..-4]
+            return strippedValues.join('-')
+        } else {
+            return extVersion
+        }
+    } else {
+        return extVersion.replace("${project.ext.snapshotVersion}", "")
+    }
+}
+
+def skipTests = false
+
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(":jaeger-extension-ballerina-tests:ballerinaTest")) {
+        skipTests = true
+    }
+}
+
+task initializeVariables {
+    if (project.hasProperty("groups")) {
+        groupParams = "--groups ${project.findProperty("groups")}"
+    }
+    if (project.hasProperty("disable")) {
+        disableGroups = "--disable-groups ${project.findProperty("disable")}"
+    }
+    if (project.hasProperty("debug")) {
+        debugParams = "--debug ${project.findProperty("debug")}"
+    }
+    if (project.hasProperty("balJavaDebug")) {
+        balJavaDebugParam = "BAL_JAVA_DEBUG=${project.findProperty("balJavaDebug")}"
+    }
+    if (project.hasProperty('balNativeTest')) {
+        nativeFlag = '--native'
+    }
+    if (project.hasProperty('balTests')) {
+        testPackages = project.findProperty('balTests').toString().split(",")
+    }
+    if (project.hasProperty('skipBalTests')) {
+        project.findProperty('skipBalTests').toString().split(",").each {testPackage ->
+            testPackages.remove(testPackage)
+        }
+    }
+}
+
+task updateTomlVerions {
+    dependsOn ":jaeger-extension-ballerina:ballerinaBuild"
+
+    doLast {
+        def newConfig = jaegerServerTestConfigFile.text.replace("@toml.version@", tomlVersion)
+        jaegerServerTestConfigFile.text = newConfig
+        def newDependencies = jaegerServerTestDependenciesFile.text.replace("@toml.version@", tomlVersion)
+        jaegerServerTestDependenciesFile.text = newDependencies
+    }
+}
+
+task startJaegerServer() {
+    dependsOn ":jaeger-extension-ballerina:ballerinaBuild"
+
+    doLast {
+        // This check is added to prevent starting the server in Windows OS, since the Docker image does not support
+        // for Windows OS.
+        if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
+            def stdOut = new ByteArrayOutputStream()
+            exec {
+                commandLine 'sh', '-c', "docker ps --filter name=jaeger-server"
+                standardOutput = stdOut
+            }
+            if (!stdOut.toString().contains("jaeger-server")) {
+                println "Starting Jaeger server."
+                exec {
+                    commandLine 'sh', '-c', "docker-compose -f $project.projectDir/resources/jaeger-server/docker-compose.yml up -d"
+                    standardOutput = stdOut
+                }
+                println stdOut.toString()
+                println "Waiting 15s until the Jaeger server get initiated."
+                sleep(15 * 1000)
+            } else {
+                println "Jaeger server is already started."
+            }
+        }
+    }
+}
+
+task stopJaegerServer() {
+    doLast {
+        // This check is added to prevent trying to stop the server in Windows OS, since the Docker image not started
+        // in Windows OS.
+        if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
+            def stdOut = new ByteArrayOutputStream()
+            exec {
+                commandLine 'sh', '-c', "docker ps --filter name=jaeger-server"
+                standardOutput = stdOut
+            }
+            if (stdOut.toString().contains("jaeger-server")) {
+                println "Stopping LDAP server."
+                exec {
+                    commandLine 'sh', '-c', "docker stop jaeger-server"
+                    standardOutput = stdOut
+                }
+                println stdOut.toString()
+                println "Waiting 5s until the Jaeger server get stopped."
+                sleep(5 * 1000)
+            } else {
+                println "Jaeger server is not started."
+            }
+        }
+    }
+}
+
+task revertTomlFile {
+    doLast {
+        jaegerServerTestConfigFile.text = jaegerServerTestOriginalConfig
+        jaegerServerTestDependenciesFile.text = jaegerServerTestOriginalDependencies
+    }
+}
+
+task ballerinaTest {
+    dependsOn ":jaeger-extension-ballerina:ballerinaBuild"
+    dependsOn ":jaeger-extension-ballerina:publishBalaFileToLocal"
+    dependsOn initializeVariables
+    dependsOn updateTomlVerions
+    dependsOn startJaegerServer
+
+    finalizedBy(revertTomlFile)
+    finalizedBy(stopJaegerServer)
+
+    doLast {
+        testPackages.each { testPackage ->
+            def env = "JAVA_OPTS -DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true ${testParams} ${groupParams}" +
+                    " ${disableGroups} ${windowsDisableGroups} ${debugParams}"
+            executeBalCommand("test", "${project.projectDir}/${testPackage}", env)
+        }
+    }
+}
+
+test.dependsOn ballerinaTest

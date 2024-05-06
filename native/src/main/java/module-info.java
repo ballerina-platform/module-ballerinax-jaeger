@@ -1,8 +1,6 @@
 module io.ballerina.observe.trace.extension.jaeger {
     requires io.ballerina.runtime;
-    requires jaeger.core;
     requires io.opentelemetry.api;
-    requires io.opentelemetry.api.metrics;
     requires io.opentelemetry.context;
     requires io.opentelemetry.sdk.trace;
     requires io.opentelemetry.sdk.common;
