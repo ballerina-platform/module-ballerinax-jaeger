@@ -43,3 +43,6 @@ gradle-app.setting
 # Ballerina
 target/
 bin/
+
+# Other
+*.deb
