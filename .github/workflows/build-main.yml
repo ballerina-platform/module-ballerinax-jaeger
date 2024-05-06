@@ -6,13 +6,13 @@ on:
       ballerina_version:
         description: 'Ballerina version'
         required: true
-        default: '2201.8.3'
+        default: '2201.9.0'
   push:
     branches:
       - main
 
 env:
-  BALLERINA_DISTRIBUTION_VERSION: 2201.8.3    # Update this with the latest Ballerina version
+  BALLERINA_DISTRIBUTION_VERSION: 2201.9.0    # Update this with the latest Ballerina version
 
 jobs:
   build:

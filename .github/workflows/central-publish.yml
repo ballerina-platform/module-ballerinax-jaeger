@@ -6,7 +6,7 @@ on:
       ballerina_version:
         description: 'Ballerina version'
         required: true
-        default: '2201.8.3'
+        default: '2201.9.0'
       environment:
         type: choice
         description: Select environment
