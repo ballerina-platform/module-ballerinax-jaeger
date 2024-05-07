@@ -31,7 +31,7 @@ jobs:
         with:
           version: ${{ github.event.inputs.ballerina_version }}
       - name: Set up Ballerina
-        if: github.event_name == 'push'
+        if: github.event_name == 'schedule'
         uses: ballerina-platform/setup-ballerina@v1.1.0
         with:
           version: ${{ env.BALLERINA_DISTRIBUTION_VERSION }}
