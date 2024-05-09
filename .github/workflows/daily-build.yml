@@ -58,9 +58,9 @@ jobs:
           ./gradlew clean build publish --stacktrace --scan --console=plain --no-daemon
           ./gradlew codeCoverageReport --console=plain --no-daemon
       - name: Upload Coverage Report
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
-          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
       - name: Notify failure
         if: ${{ failure() }}
         run: |
