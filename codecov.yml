@@ -1,5 +1,5 @@
 fixes:
-  - "ballerinax/jaeger/*/::jaeger-extension-ballerina/"
+  - "ballerinax/jaeger/*/::ballerina/"
   
 ignore:
   - "**/test"

@@ -50,7 +50,7 @@ def disableGroups = ""
 def windowsDisableGroups = "--disable-groups disabledOnWindows"
 def debugParams = ""
 def balJavaDebugParam = ""
-def testParams = ""
+def testParams = "--code-coverage --coverage-format=xml"
 def nativeFlag = ""
 
 def packageOrg = "ballerinax"
@@ -195,9 +195,9 @@ task ballerinaTest {
 
     doLast {
         testPackages.each { testPackage ->
-            def env = "JAVA_OPTS -DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true ${testParams} ${groupParams}" +
+            def env = "JAVA_OPTS -DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true ${groupParams}" +
                     " ${disableGroups} ${windowsDisableGroups} ${debugParams}"
-            executeBalCommand("test", "${project.projectDir}/${testPackage}", env)
+            executeBalCommand("test ${testParams}", "${project.projectDir}/${testPackage}", env)
         }
     }
 }
