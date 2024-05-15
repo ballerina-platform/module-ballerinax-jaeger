@@ -2,4 +2,4 @@ fixes:
   - "ballerinax/jaeger/*/::ballerina/"
   
 ignore:
-  - "**/test"
+  - "**/native"
