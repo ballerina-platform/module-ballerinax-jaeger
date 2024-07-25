@@ -31,9 +31,8 @@ jobs:
         run: | 
           ./gradlew clean build --stacktrace --scan --console=plain --no-daemon
           ./gradlew codeCoverageReport --console=plain --no-daemon
-      - name: Upload Coverage Report
-        uses: codecov/codecov-action@v3
+      - name: Upload Codecov Report
+        uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           files: ballerina-tests/jaeger-server-tests/target/report/jaeger_server_tests/coverage-report.xml
 
