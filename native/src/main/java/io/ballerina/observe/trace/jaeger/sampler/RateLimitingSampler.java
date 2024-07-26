@@ -29,8 +29,8 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
  */
 public class RateLimitingSampler implements Sampler {
     public static final String TYPE = "ratelimiting";
-    static final AttributeKey<String> SAMPLER_TYPE = stringKey("sampler.type");
-    static final AttributeKey<Double> SAMPLER_PARAM = doubleKey("sampler.param");
+    private static final AttributeKey<String> SAMPLER_TYPE = stringKey("sampler.type");
+    private static final AttributeKey<Double> SAMPLER_PARAM = doubleKey("sampler.param");
 
     private final RateLimiter rateLimiter;
     private final SamplingResult onSamplingResult;
