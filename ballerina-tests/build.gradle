@@ -137,7 +137,7 @@ task startJaegerServer() {
             if (!stdOut.toString().contains("jaeger-server")) {
                 println "Starting Jaeger server."
                 exec {
-                    commandLine 'sh', '-c', "docker-compose -f $project.projectDir/resources/jaeger-server/docker-compose.yml up -d"
+                    commandLine 'sh', '-c', "docker compose -f $project.projectDir/resources/jaeger-server/docker-compose.yml up -d"
                     standardOutput = stdOut
                 }
                 println stdOut.toString()
