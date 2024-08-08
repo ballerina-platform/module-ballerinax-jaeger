@@ -184,6 +184,7 @@ task revertTomlFile {
 }
 
 task ballerinaTest {
+    dependsOn ":jaeger-extension-native:test"
     dependsOn ":jaeger-extension-ballerina:ballerinaBuild"
     dependsOn ":jaeger-extension-ballerina:publishBalaFileToLocal"
     dependsOn initializeVariables
