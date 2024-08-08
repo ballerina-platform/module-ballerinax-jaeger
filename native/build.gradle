@@ -141,3 +141,5 @@ jacocoTestReport {
         xml.required = true
     }
 }
+
+test.dependsOn ":jaeger-extension-ballerina:ballerinaBuild"
