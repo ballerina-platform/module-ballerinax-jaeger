@@ -29,6 +29,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import org.testng.Assert;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.util.Objects;
@@ -45,7 +46,8 @@ public class TracerProviderTest {
     private static final int REPORTER_FLUSH_INTERVAL = 1000;
     private static final int REPORTER_BUFFER_SIZE = 10000;
 
-    public TracerProviderTest() {
+    @BeforeTest
+    public void initializeTracerProvider() {
         JaegerTracerProvider.initializeConfigurations(AGENT_HOST_NAME, AGENT_PORT, SAMPLER_TYPE, SAMPLER_PARAM,
                 REPORTER_FLUSH_INTERVAL, REPORTER_BUFFER_SIZE);
     }
