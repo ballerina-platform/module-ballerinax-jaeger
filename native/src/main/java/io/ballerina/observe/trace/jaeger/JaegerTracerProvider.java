@@ -102,7 +102,6 @@ public class JaegerTracerProvider implements TracerProvider {
 
     @Override
     public Tracer getTracer(String serviceName) {
-
         return tracerProviderBuilder.setResource(
                 Resource.create(Attributes.of(SERVICE_NAME, serviceName)))
                 .build().get("jaeger");
@@ -110,7 +109,10 @@ public class JaegerTracerProvider implements TracerProvider {
 
     @Override
     public ContextPropagators getPropagators() {
-
         return ContextPropagators.create(JaegerPropagator.getInstance());
+    }
+
+    public SdkTracerProviderBuilder getTracerProviderBuilder() {
+        return tracerProviderBuilder;
     }
 }

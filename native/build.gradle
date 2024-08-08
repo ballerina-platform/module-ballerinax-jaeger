@@ -16,6 +16,11 @@
 
 plugins {
     id 'java-library'
+    id 'jacoco'
+}
+
+jacoco {
+    toolVersion = "${jacocoVersion}"
 }
 
 description = 'Ballerina - Jaeger Extension - Native Module'
@@ -61,6 +66,8 @@ dependencies {
     implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
     implementation("io.netty:netty-handler:${nettyVersion}")
     implementation "io.perfmark:perfmark-api:${perfmarkVersion}"
+
+    testImplementation "org.testng:testng:${testngVersion}"
 }
 
 compileJava {
@@ -107,4 +114,30 @@ task copyJavaClassFiles(type: Copy) {
         include '**/*.class'
     }
     into "${project.rootDir.absolutePath}/build/classes"
+}
+
+test {
+    useTestNG() {
+        suites 'src/test/resources/testng.xml'
+    }
+    testLogging.showStandardStreams = true
+    testLogging {
+        events "PASSED", "FAILED", "SKIPPED"
+        afterSuite { desc, result ->
+            if (!desc.parent) { // will match the outermost suite
+                def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+                def startItem = '|  ', endItem = '  |'
+                def repeatLength = startItem.length() + output.length() + endItem.length()
+                println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+            }
+        }
+    }
+    finalizedBy(jacocoTestReport)
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+    }
 }
