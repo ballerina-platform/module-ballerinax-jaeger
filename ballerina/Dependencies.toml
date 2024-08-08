@@ -10,7 +10,7 @@ distribution-version = "2201.9.2"
 [[package]]
 org = "ballerina"
 name = "io"
-version = "1.6.0"
+version = "1.6.1"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
@@ -50,7 +50,7 @@ modules = [
 [[package]]
 org = "ballerinax"
 name = "jaeger"
-version = "0.5.1"
+version = "0.5.2"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
