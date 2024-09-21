@@ -132,7 +132,7 @@ test {
             }
         }
     }
-    finalizedBy(jacocoTestReport)
+//    finalizedBy(jacocoTestReport)
 }
 
 jacocoTestReport {
