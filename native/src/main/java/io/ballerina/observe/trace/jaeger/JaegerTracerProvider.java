@@ -25,9 +25,9 @@ import io.grpc.ManagedChannel;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelProvider;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -111,6 +111,6 @@ public class JaegerTracerProvider implements TracerProvider {
     @Override
     public ContextPropagators getPropagators() {
 
-        return ContextPropagators.create(JaegerPropagator.getInstance());
+        return ContextPropagators.create(W3CTraceContextPropagator.getInstance());
     }
 }
