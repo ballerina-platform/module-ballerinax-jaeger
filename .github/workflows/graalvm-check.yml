@@ -8,10 +8,10 @@ on:
       ballerina_version:
         description: 'Ballerina version'
         required: true
-        default: '2201.9.0'
+        default: '2201.10.0'
 
 env:
-  BALLERINA_DISTRIBUTION_VERSION: 2201.9.0   # Update this with the latest Ballerina version
+  BALLERINA_DISTRIBUTION_VERSION: 2201.10.0   # Update this with the latest Ballerina version
 
 jobs:
   build:
