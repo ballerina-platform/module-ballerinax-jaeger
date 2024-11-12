@@ -60,8 +60,6 @@ def testPackages = ["jaeger-server-tests"]
 
 def jaegerServerTestConfigFile = new File("${project.projectDir}/jaeger-server-tests/Ballerina.toml")
 def jaegerServerTestOriginalConfig = jaegerServerTestConfigFile.text
-def jaegerServerTestDependenciesFile = new File("${project.projectDir}/jaeger-server-tests/Dependencies.toml")
-def jaegerServerTestOriginalDependencies = jaegerServerTestDependenciesFile.text
 
 def stripBallerinaExtensionVersion(String extVersion) {
     if (extVersion.matches(project.ext.timestampedVersionRegex)) {
@@ -117,8 +115,6 @@ task updateTomlVerions {
     doLast {
         def newConfig = jaegerServerTestConfigFile.text.replace("@toml.version@", tomlVersion)
         jaegerServerTestConfigFile.text = newConfig
-        def newDependencies = jaegerServerTestDependenciesFile.text.replace("@toml.version@", tomlVersion)
-        jaegerServerTestDependenciesFile.text = newDependencies
     }
 }
 
@@ -179,7 +175,6 @@ task stopJaegerServer() {
 task revertTomlFile {
     doLast {
         jaegerServerTestConfigFile.text = jaegerServerTestOriginalConfig
-        jaegerServerTestDependenciesFile.text = jaegerServerTestOriginalDependencies
     }
 }
 

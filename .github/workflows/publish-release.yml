@@ -6,7 +6,7 @@ on:
       distribution_version:
         description: 'Ballerina distribution version (e.g.; 2201.9.0)'
         required: true
-        default: '2201.9.0'
+        default: '2201.10.0'
 
 jobs:
   publish-release:
