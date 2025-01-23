@@ -43,7 +43,7 @@ version = "@opentelemetrySDK.version@"
 
 [[platform.java21.dependency]]
 path = "./lib/opentelemetry-semconv-@opentelemetrySemconv.version@.jar"
-groupId = "io.opentelemetry"
+groupId = "io.opentelemetry.semconv"
 artifactId = "opentelemetry-semconv"
 version = "@opentelemetrySemconv.version@"
 
