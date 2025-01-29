@@ -358,7 +358,7 @@ function testHttpCachingClientSpanTags() returns error? {
     test:assertTrue(containsTag("src.object.name", httpCachingClientSpanTagKeys));
     test:assertEquals(httpCachingClientSpanTags["src.object.name"], "ballerina/http/HttpCachingClient");
     test:assertTrue(containsTag("src.position", httpCachingClientSpanTagKeys));
-    test:assertEquals(httpCachingClientSpanTags["src.position"], "http_client_endpoint.bal:282:41");
+    test:assertEquals(httpCachingClientSpanTags["src.position"], "http_client_endpoint.bal:285:41");
 }
 
 @test:Config
@@ -394,7 +394,7 @@ function testHttpClientSpanTags() returns error? {
     test:assertTrue(containsTag("src.object.name", httpClientSpanTagKeys));
     test:assertEquals(httpClientSpanTags["src.object.name"], "ballerina/http/HttpClient");
     test:assertTrue(containsTag("src.position", httpClientSpanTagKeys));
-    test:assertEquals(httpClientSpanTags["src.position"], "caching_http_caching_client.bal:371:16");
+    test:assertEquals(httpClientSpanTags["src.position"], "caching_http_caching_client.bal:372:16");
 }
 
 function isContain(string[] array, string id) returns boolean {

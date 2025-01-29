@@ -83,8 +83,8 @@ def artifactLibParent = file("${project.buildDir}/lib_parent/")
 def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
 def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
 def originalConfig = ballerinaConfigFile.text
-def artifactJar = file("$project.projectDir/target/cache/${packageOrg}/${packageName}/${tomlVersion}/java17/")
-def platform = "java17"
+def artifactJar = file("$project.projectDir/target/cache/${packageOrg}/${packageName}/${tomlVersion}/java21/")
+def platform = "java21"
 def skipTests = false
 
 def stripBallerinaExtensionVersion(String extVersion) {
