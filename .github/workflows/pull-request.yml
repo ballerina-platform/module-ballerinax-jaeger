@@ -3,7 +3,7 @@ name: Validate Pull Request
 on: pull_request
 
 env:
-  BALLERINA_DISTRIBUTION_VERSION: 2201.11.0   # Update this with the latest Ballerina version
+  BALLERINA_DISTRIBUTION_VERSION: 2201.12.0   # Update this with the latest Ballerina version
 
 jobs:
   ubuntu-build:
