@@ -18,7 +18,7 @@
 org = "ballerinax"
 name = "jaeger"
 version = "@toml.version@"
-distribution = "2201.11.0"
+distribution = "2201.12.0"
 
 [platform.java21]
 graalvmCompatible = true
