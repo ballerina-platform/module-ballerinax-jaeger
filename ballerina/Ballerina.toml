@@ -18,16 +18,16 @@
 org = "ballerinax"
 name = "jaeger"
 version = "1.1.0"
-distribution = "2201.12.0"
+distribution = "2201.11.0"
 
 [platform.java21]
 graalvmCompatible = true
 
 [[platform.java21.dependency]]
-path = "../native/build/libs/jaeger-extension-native-1.0.0-SNAPSHOT.jar"
+path = "../native/build/libs/jaeger-extension-native-1.1.0-SNAPSHOT.jar"
 groupId = "ballerina"
 artifactId = "jaeger-extension-native"
-version = "1.0.0-SNAPSHOT"
+version = "1.1.0-SNAPSHOT"
 
 [[platform.java21.dependency]]
 path = "./lib/opentelemetry-sdk-trace-1.32.0.jar"
