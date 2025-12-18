@@ -11,4 +11,4 @@ observabilityIncluded = true
 org="ballerinax"
 name="jaeger"
 repository="local"
-version = "1.0.0"
+version = "@toml.version@"

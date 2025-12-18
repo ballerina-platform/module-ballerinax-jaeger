@@ -76,13 +76,13 @@ task copyExternalJarsToLib(type: Copy) {
 
 def packageOrg = "ballerinax"
 def packageName = "jaeger"
-def ballerinaConfigFile = new File("${project.projectDir}/Ballerina.toml")
+def ballerinaTomlFile = new File("${project.projectDir}/Ballerina.toml")
+def ballerinaTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/Ballerina.toml")
 def artifactBallerinaDocs = file("${project.projectDir}/build/docs_parent/")
 def artifactCacheParent = file("${project.buildDir}/cache_parent/")
 def artifactLibParent = file("${project.buildDir}/lib_parent/")
 def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
 def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
-def originalConfig = ballerinaConfigFile.text
 def artifactJar = file("$project.projectDir/target/cache/${packageOrg}/${packageName}/${tomlVersion}/java21/")
 def platform = "java21"
 def skipTests = false
@@ -115,7 +115,7 @@ task updateTomlVersions {
         def protobufVersion = project.protobufVersion
         def perfmarkVersion = project.perfmarkVersion
 
-        def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
+        def newConfig = ballerinaTomlFilePlaceHolder.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
         newConfig = newConfig.replace("@opentelemetry.version@", openTelemetryVersion)
         newConfig = newConfig.replace("@opentelemetrySDK.version@", openTelemetrySDKVersion)
@@ -128,15 +128,11 @@ task updateTomlVersions {
         newConfig = newConfig.replace("@netty.version@", nettyVersion)
         newConfig = newConfig.replace("@protobuf.version@", protobufVersion)
         newConfig = newConfig.replace("@perfmark.version@", perfmarkVersion)
-        ballerinaConfigFile.text = newConfig
+        ballerinaTomlFile.text = newConfig
     }
 }
 
-task revertTomlFile {
-    doLast {
-        ballerinaConfigFile.text = originalConfig
-    }
-}
+
 
 task ballerinaBuild {
     dependsOn updateTomlVersions
@@ -154,9 +150,6 @@ task ballerinaBuild {
     dependsOn ":jaeger-extension-ballerina:generatePomFileForMavenJavaPublication"
 
     inputs.dir file(project.projectDir)
-    if (skipTests) {
-        finalizedBy(revertTomlFile)
-    }
 
     doLast {
         def additionalBuildParams = ""
@@ -224,8 +217,6 @@ task ballerinaPublish {
     dependsOn ballerinaBuild
     dependsOn ":jaeger-extension-ballerina:generatePomFileForMavenJavaPublication"
 
-    finalizedBy(revertTomlFile)
-
     doLast {
         if (project.version.toString().split("-").length > 1) {
             return
@@ -279,8 +270,6 @@ task extractBallerinaClassFiles(type: Copy) {
 
 task publishBalaFileToLocal {
     dependsOn ballerinaBuild
-
-    finalizedBy(revertTomlFile)
 
     doLast {
         if (!skipTests) {

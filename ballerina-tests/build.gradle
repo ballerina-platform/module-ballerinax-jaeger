@@ -58,8 +58,8 @@ def packageName = "jaeger"
 def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
 def testPackages = ["jaeger-server-tests"]
 
-def jaegerServerTestConfigFile = new File("${project.projectDir}/jaeger-server-tests/Ballerina.toml")
-def jaegerServerTestOriginalConfig = jaegerServerTestConfigFile.text
+def ballerinaTestTomlFile = new File("${project.projectDir}/jaeger-server-tests/Ballerina.toml")
+def ballerinaTestTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/tests/Ballerina.toml")
 
 def stripBallerinaExtensionVersion(String extVersion) {
     if (extVersion.matches(project.ext.timestampedVersionRegex)) {
@@ -113,8 +113,8 @@ task updateTomlVerions {
     dependsOn ":jaeger-extension-ballerina:ballerinaBuild"
 
     doLast {
-        def newConfig = jaegerServerTestConfigFile.text.replace("@toml.version@", tomlVersion)
-        jaegerServerTestConfigFile.text = newConfig
+        def newConfig = ballerinaTestTomlFilePlaceHolder.text.replace("@toml.version@", tomlVersion)
+        ballerinaTestTomlFile.text = newConfig
     }
 }
 
@@ -172,12 +172,6 @@ task stopJaegerServer() {
     }
 }
 
-task revertTomlFile {
-    doLast {
-        jaegerServerTestConfigFile.text = jaegerServerTestOriginalConfig
-    }
-}
-
 task ballerinaTest {
     dependsOn ":jaeger-extension-ballerina:ballerinaBuild"
     dependsOn ":jaeger-extension-ballerina:publishBalaFileToLocal"
@@ -185,7 +179,6 @@ task ballerinaTest {
     dependsOn updateTomlVerions
     dependsOn startJaegerServer
 
-    finalizedBy(revertTomlFile)
     finalizedBy(stopJaegerServer)
 
     doLast {
