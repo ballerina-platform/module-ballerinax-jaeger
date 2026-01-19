@@ -8,10 +8,10 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class JaegerExporter implements SpanExporter {
+public final class JaegerExporter implements SpanExporter {
     private static final Logger logger = Logger.getLogger(JaegerExporter.class.getName());
-    String endpoint;
-    SpanExporter exporter;
+    private String endpoint;
+    private SpanExporter exporter;
 
     public JaegerExporter(SpanExporter exporter, String endpoint, boolean isTraceLoggingEnabled) {
         this.exporter = exporter;
