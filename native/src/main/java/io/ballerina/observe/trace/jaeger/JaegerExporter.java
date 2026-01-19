@@ -24,6 +24,7 @@ public class JaegerExporter implements SpanExporter {
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
+        logger.info("ballerina: attempting to export " + spans.size() + " spans to " + endpoint);
         CompletableResultCode result = exporter.export(spans);
         result.whenComplete(() -> {
             if (result.isSuccess()) {
