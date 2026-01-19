@@ -358,7 +358,7 @@ function testHttpCachingClientSpanTags() returns error? {
     test:assertTrue(containsTag("src.object.name", httpCachingClientSpanTagKeys));
     test:assertEquals(httpCachingClientSpanTags["src.object.name"], "ballerina/http/HttpCachingClient");
     test:assertTrue(containsTag("src.position", httpCachingClientSpanTagKeys));
-    test:assertEquals(httpCachingClientSpanTags["src.position"], "http_client_endpoint.bal:285:41");
+    test:assertEquals(httpCachingClientSpanTags["src.position"], "http_client_endpoint.bal:99:41");
 }
 
 @test:Config
