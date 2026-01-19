@@ -32,6 +32,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 import java.io.PrintStream;
@@ -59,7 +60,7 @@ public class JaegerTracerProvider implements TracerProvider {
 
     public static void initializeConfigurations(BString agentHostname, int agentPort, BString samplerType,
                                                 BDecimal samplerParam, int reporterFlushInterval,
-                                                int reporterBufferSize) {
+                                                int reporterBufferSize, boolean isTraceLoggingEnabled) {
 
         String reporterEndpoint = agentHostname + ":" + agentPort;
 
@@ -72,9 +73,11 @@ public class JaegerTracerProvider implements TracerProvider {
                 .setChannel(jaegerChannel)
                 .build();
 
+        SpanExporter jaegerExporter = new JaegerExporter(exporter, reporterEndpoint, isTraceLoggingEnabled);
+
         tracerProviderBuilder = SdkTracerProvider.builder()
                 .addSpanProcessor(BatchSpanProcessor
-                        .builder(exporter)
+                        .builder(jaegerExporter)
                         .setMaxExportBatchSize(reporterBufferSize)
                         .setExporterTimeout(reporterFlushInterval, TimeUnit.MILLISECONDS)
                         .build());
