@@ -33,8 +33,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 /**
  * Test class for JaegerExporter.
@@ -81,7 +80,7 @@ public class JaegerExporterTest {
 
         // Verify
         verify(mockExporter, times(1)).export(spans);
-        assertTrue(!result.isSuccess());
+        assertFalse(result.isSuccess());
     }
 
     @Test

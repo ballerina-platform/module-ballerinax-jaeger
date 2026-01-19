@@ -63,8 +63,7 @@ dependencies {
     implementation "io.perfmark:perfmark-api:${perfmarkVersion}"
 
     testImplementation "org.testng:testng:${testngVersion}"
-    testImplementation "org.mockito:mockito-core:5.8.0"
-    testImplementation "org.mockito:mockito-inline:5.2.0"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
     testImplementation "io.opentelemetry:opentelemetry-sdk-testing:${openTelemetrySDKVersion}"
 }
 

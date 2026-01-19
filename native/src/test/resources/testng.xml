@@ -22,7 +22,7 @@
 <suite name="Observe test suite" parallel="false">
     <test name="Observe Module Tests" parallel="false">
         <classes>
-            <class name="io.ballerina.observe.trace.jaeger.JaegerExporter"/>
+            <class name="io.ballerina.observe.trace.jaeger.JaegerTracerProviderTest"/>
             <class name="io.ballerina.observe.trace.jaeger.JaegerExporterTest"/>
             <class name="io.ballerina.observe.trace.jaeger.sampler.RateLimiterTest"/>
             <class name="io.ballerina.observe.trace.jaeger.sampler.RateLimitingSamplerTest"/>

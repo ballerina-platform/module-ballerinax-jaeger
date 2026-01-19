@@ -27,8 +27,8 @@ import java.util.logging.Logger;
 
 public final class JaegerExporter implements SpanExporter {
     private static final Logger logger = Logger.getLogger(JaegerExporter.class.getName());
-    private String endpoint;
-    private SpanExporter exporter;
+    private final String endpoint;
+    private final SpanExporter exporter;
 
     public JaegerExporter(SpanExporter exporter, String endpoint, boolean isTraceLoggingEnabled) {
         this.exporter = exporter;
