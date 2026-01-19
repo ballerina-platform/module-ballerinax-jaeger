@@ -86,7 +86,6 @@ test {
         events "PASSED", "FAILED", "SKIPPED"
         showStackTraces true
         showStandardStreams true
-        events "failed"
         exceptionFormat "full"
         afterSuite { desc, result ->
             if (!desc.parent) { // will match the outermost suite
