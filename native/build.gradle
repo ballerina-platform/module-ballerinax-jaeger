@@ -61,6 +61,11 @@ dependencies {
     implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
     implementation("io.netty:netty-handler:${nettyVersion}")
     implementation "io.perfmark:perfmark-api:${perfmarkVersion}"
+
+    testImplementation "org.testng:testng:${testngVersion}"
+    testImplementation "org.mockito:mockito-core:5.8.0"
+    testImplementation "org.mockito:mockito-inline:5.2.0"
+    testImplementation "io.opentelemetry:opentelemetry-sdk-testing:${openTelemetrySDKVersion}"
 }
 
 compileJava {
@@ -69,6 +74,28 @@ compileJava {
                 '--module-path', classpath.asPath,
         ]
         classpath = files()
+    }
+}
+
+test {
+    useTestNG() {
+        suites 'src/test/resources/testng.xml'
+    }
+
+    testLogging {
+        events "PASSED", "FAILED", "SKIPPED"
+        showStackTraces true
+        showStandardStreams true
+        events "failed"
+        exceptionFormat "full"
+        afterSuite { desc, result ->
+            if (!desc.parent) { // will match the outermost suite
+                def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+                def startItem = '|  ', endItem = '  |'
+                def repeatLength = startItem.length() + output.length() + endItem.length()
+                println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+            }
+        }
     }
 }
 
