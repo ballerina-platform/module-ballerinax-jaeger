@@ -16,6 +16,7 @@
 
 plugins {
     id 'java-library'
+    id 'jacoco'
 }
 
 description = 'Ballerina - Jaeger Extension - Native Module'
@@ -94,6 +95,16 @@ test {
                 println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
             }
         }
+    }
+
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
     }
 }
 
