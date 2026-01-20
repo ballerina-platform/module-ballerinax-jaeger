@@ -127,7 +127,7 @@ publishing {
 
 task copyJavaClassFiles(type: Copy) {
     dependsOn(compileJava)
-    from("${project.buildDir}/classes") {
+    from("${project.buildDir}/classes/java/main") {
         exclude '**/module-info.class'
         include '**/*.class'
     }
