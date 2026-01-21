@@ -30,12 +30,16 @@ public final class JaegerExporter implements SpanExporter {
     private final String endpoint;
     private final SpanExporter exporter;
 
-    public JaegerExporter(SpanExporter exporter, String endpoint, boolean isTraceLoggingEnabled) {
+    public JaegerExporter(SpanExporter exporter, String endpoint, boolean isTraceLoggingEnabled,
+                          boolean isPayloadLoggingEnabled) {
         this.exporter = exporter;
         this.endpoint = endpoint;
 
-        if (isTraceLoggingEnabled) {
+        if (isPayloadLoggingEnabled) {
             logger.setLevel(Level.FINE);
+            logger.fine("ballerina: Jaeger payload logging is enabled.");
+        } else if (isTraceLoggingEnabled) {
+            logger.setLevel(Level.WARNING);
         }
     }
 
@@ -44,9 +48,7 @@ public final class JaegerExporter implements SpanExporter {
         logger.info("ballerina: attempting to export " + spans.size() + " spans to " + endpoint);
         CompletableResultCode result = exporter.export(spans);
         result.whenComplete(() -> {
-            if (result.isSuccess()) {
-                logger.info("ballerina: successfully exported spans to " + endpoint);
-            } else {
+            if (!result.isSuccess()) {
                 logger.severe("ballerina: failed to export spans to " + endpoint);
             }
         });
