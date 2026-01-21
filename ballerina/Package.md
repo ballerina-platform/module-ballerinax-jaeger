@@ -30,6 +30,12 @@ tracingEnabled=true
 tracingProvider="jaeger"
 
 [ballerinax.jaeger]
-agentHostname="127.0.0.1"  # Optional Configuration. Default value is localhost
-agentPort=55680             # Optional Configuration. Default value is 55680
+agentHostname="127.0.0.1"       # Optional Configuration. Default value is localhost
+agentPort=4317                  # Optional Configuration. Default value is 55680
+samplerType="const"             # Optional Configuration. Default value is const
+samplerParam=1                  # Optional Configuration. Default value is 1
+reporterFlushInterval=1000      # Optional Configuration. Default value is 1000
+reporterBufferSize=10000        # Optional Configuration. Default value is 10000
+isTraceLoggingEnabled=false     # Optional Configuration. Default value is false
+isPayloadLoggingEnabled=false   # Optional Configuration. Default value is false
 ```
