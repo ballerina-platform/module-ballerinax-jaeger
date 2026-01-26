@@ -21,37 +21,36 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
+import java.io.PrintStream;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public final class JaegerExporter implements SpanExporter {
-    private static final Logger logger = Logger.getLogger(JaegerExporter.class.getName());
+    private static final PrintStream console = System.out;
     private final String endpoint;
     private final SpanExporter exporter;
+    private final boolean isPayloadLoggingEnabled;
+    private final boolean isTraceLoggingEnabled;
 
     public JaegerExporter(SpanExporter exporter, String endpoint, boolean isTraceLoggingEnabled,
                           boolean isPayloadLoggingEnabled) {
         this.exporter = exporter;
         this.endpoint = endpoint;
-
-        if (isPayloadLoggingEnabled) {
-            logger.setLevel(Level.FINE);
-            logger.fine("ballerina: Jaeger payload logging is enabled.");
-        } else if (isTraceLoggingEnabled) {
-            logger.setLevel(Level.WARNING);
-        }
+        this.isPayloadLoggingEnabled = isPayloadLoggingEnabled;
+        this.isTraceLoggingEnabled = isTraceLoggingEnabled || isPayloadLoggingEnabled;
     }
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
-        logger.info("ballerina: attempting to export " + spans.size() + " spans to " + endpoint);
-        logger.info("ballerina: span Payload: " + spans);
-
+        if (isPayloadLoggingEnabled) {
+            console.println("debug: attempting to export " + spans.size() + " spans to " + endpoint);
+            console.println("debug: span Payload: " + spans);
+        }
         CompletableResultCode result = exporter.export(spans);
         result.whenComplete(() -> {
             if (!result.isSuccess()) {
-                logger.severe("ballerina: failed to export spans to " + endpoint);
+                if (isTraceLoggingEnabled) {
+                    console.println("debug: failed to export spans to " + endpoint);
+                }
             }
         });
         return result;
