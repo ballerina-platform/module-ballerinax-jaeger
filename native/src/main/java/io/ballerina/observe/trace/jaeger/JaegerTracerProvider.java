@@ -60,7 +60,7 @@ public class JaegerTracerProvider implements TracerProvider {
 
     public static void initializeConfigurations(BString agentHostname, int agentPort, BString samplerType,
                                                 BDecimal samplerParam, int reporterFlushInterval,
-                                                int reporterBufferSize, boolean isTraceLoggingEnabled,
+                                                int reporterBufferSize, boolean isErrorLoggingEnabled,
                                                 boolean isPayloadLoggingEnabled) {
 
         String reporterEndpoint = agentHostname + ":" + agentPort;
@@ -74,7 +74,7 @@ public class JaegerTracerProvider implements TracerProvider {
                 .setChannel(jaegerChannel)
                 .build();
 
-        SpanExporter jaegerExporter = new JaegerExporter(exporter, reporterEndpoint, isTraceLoggingEnabled,
+        SpanExporter jaegerExporter = new JaegerExporter(exporter, reporterEndpoint, isErrorLoggingEnabled,
                 isPayloadLoggingEnabled);
 
         tracerProviderBuilder = SdkTracerProvider.builder()

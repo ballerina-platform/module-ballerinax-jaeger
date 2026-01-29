@@ -27,7 +27,7 @@ configurable string samplerType = "const";
 configurable decimal samplerParam = 1;
 configurable int reporterFlushInterval = 1000;
 configurable int reporterBufferSize = 10000;
-configurable boolean isTraceLoggingEnabled = false;
+configurable boolean isErrorLoggingEnabled = false;
 configurable boolean isPayloadLoggingEnabled = false;
 
 function init() {
@@ -42,13 +42,13 @@ function init() {
         }
 
         externInitializeConfigurations(agentHostname, agentPort, selectedSamplerType, samplerParam,
-            reporterFlushInterval, reporterBufferSize, isTraceLoggingEnabled, isPayloadLoggingEnabled);
+            reporterFlushInterval, reporterBufferSize, isErrorLoggingEnabled, isPayloadLoggingEnabled);
     }
 }
 
 function externInitializeConfigurations(string agentHostname, int agentPort, string samplerType,
         decimal samplerParam, int reporterFlushInterval, int reporterBufferSize,
-        boolean isTraceLoggingEnabled, boolean isPayloadLoggingEnabled) = @java:Method {
+        boolean isErrorLoggingEnabled, boolean isPayloadLoggingEnabled) = @java:Method {
     'class: "io.ballerina.observe.trace.jaeger.JaegerTracerProvider",
     name: "initializeConfigurations"
 } external;

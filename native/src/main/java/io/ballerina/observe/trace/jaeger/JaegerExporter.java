@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 import java.io.PrintStream;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 
@@ -33,27 +32,27 @@ public final class JaegerExporter implements SpanExporter {
     private final String endpoint;
     private final SpanExporter exporter;
     private final boolean isPayloadLoggingEnabled;
-    private final boolean isTraceLoggingEnabled;
+    private final boolean isErrorLoggingEnabled;
 
     public JaegerExporter(SpanExporter exporter, String endpoint,
-                          boolean isTraceLoggingEnabled, boolean isPayloadLoggingEnabled) {
+                          boolean isErrorLoggingEnabled, boolean isPayloadLoggingEnabled) {
         this.exporter = exporter;
         this.endpoint = endpoint;
         this.isPayloadLoggingEnabled = isPayloadLoggingEnabled;
-        this.isTraceLoggingEnabled = isTraceLoggingEnabled || isPayloadLoggingEnabled;
+        this.isErrorLoggingEnabled = isErrorLoggingEnabled;
     }
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
         if (isPayloadLoggingEnabled) {
-            printDebugLog("attempting to export " + spans.size() + " spans to " + endpoint);
-            printDebugLog("span Payload: " + spans);
+            console.println("debug: attempting to export " + spans.size() + " spans to " + endpoint);
+            console.println("debug: span Payload: " + spans);
         }
         CompletableResultCode result = exporter.export(spans);
         result.whenComplete(() -> {
             if (!result.isSuccess()) {
-                if (isTraceLoggingEnabled) {
-                    printDebugLog("failed to export spans to " + endpoint);
+                if (isErrorLoggingEnabled) {
+                    console.println("error :failed to export spans to " + endpoint);
                 }
             }
         });
@@ -68,13 +67,5 @@ public final class JaegerExporter implements SpanExporter {
     @Override
     public CompletableResultCode shutdown() {
         return exporter.shutdown();
-    }
-
-    private void printDebugLog(String message) {
-        ZonedDateTime now = ZonedDateTime.now();
-        String timestamp = now.format(formatter);
-        String logMessage = String.format("time=%s level=DEBUG module=%s message=\"%s\"",
-                timestamp, MODULE_NAME, message);
-        console.println(logMessage);
     }
 }
