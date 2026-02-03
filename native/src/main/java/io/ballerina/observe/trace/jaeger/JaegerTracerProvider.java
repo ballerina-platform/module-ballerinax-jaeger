@@ -18,8 +18,14 @@
 package io.ballerina.observe.trace.jaeger;
 
 import io.ballerina.observe.trace.jaeger.sampler.RateLimitingSampler;
-import io.ballerina.runtime.api.values.BDecimal;
-import io.ballerina.runtime.api.values.BString;
+import io.ballerina.runtime.api.Environment;
+import io.ballerina.runtime.api.Module;
+import io.ballerina.runtime.api.concurrent.StrandMetadata;
+import io.ballerina.runtime.api.creators.TypeCreator;
+import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.types.PredefinedTypes;
+import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.*;
 import io.ballerina.runtime.observability.tracer.spi.TracerProvider;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelProvider;
@@ -58,7 +64,7 @@ public class JaegerTracerProvider implements TracerProvider {
     public void init() {    // Do Nothing
     }
 
-    public static void initializeConfigurations(BString agentHostname, int agentPort, BString samplerType,
+    public static void initializeConfigurations(Environment env, BString agentHostname, int agentPort, BString samplerType,
                                                 BDecimal samplerParam, int reporterFlushInterval,
                                                 int reporterBufferSize, boolean isErrorLoggingEnabled,
                                                 boolean isPayloadLoggingEnabled) {
@@ -74,7 +80,7 @@ public class JaegerTracerProvider implements TracerProvider {
                 .setChannel(jaegerChannel)
                 .build();
 
-        SpanExporter jaegerExporter = new JaegerExporter(exporter, reporterEndpoint, isErrorLoggingEnabled,
+        SpanExporter jaegerExporter = new JaegerExporter(env, exporter, reporterEndpoint, isErrorLoggingEnabled,
                 isPayloadLoggingEnabled);
 
         tracerProviderBuilder = SdkTracerProvider.builder()

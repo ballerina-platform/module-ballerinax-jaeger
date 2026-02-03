@@ -17,6 +17,7 @@
 import ballerina/io;
 import ballerina/jballerina.java;
 import ballerina/observe;
+import ballerina/log as _;
 
 const PROVIDER_NAME = "jaeger";
 const DEFAULT_SAMPLER_TYPE = "const";

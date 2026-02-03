@@ -17,42 +17,40 @@
  */
 package io.ballerina.observe.trace.jaeger;
 
+import io.ballerina.runtime.api.Environment;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
-import java.io.PrintStream;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 
 public final class JaegerExporter implements SpanExporter {
-    private static final PrintStream console = System.out;
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-    private static final String MODULE_NAME = "ballerinax/jaeger";
     private final String endpoint;
     private final SpanExporter exporter;
     private final boolean isPayloadLoggingEnabled;
     private final boolean isErrorLoggingEnabled;
+    private final JaegerLogger logger;
 
-    public JaegerExporter(SpanExporter exporter, String endpoint,
+    public JaegerExporter(Environment environment, SpanExporter exporter, String endpoint,
                           boolean isErrorLoggingEnabled, boolean isPayloadLoggingEnabled) {
         this.exporter = exporter;
         this.endpoint = endpoint;
         this.isPayloadLoggingEnabled = isPayloadLoggingEnabled;
         this.isErrorLoggingEnabled = isErrorLoggingEnabled;
+        this.logger = new JaegerLogger(environment);
     }
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
         if (isPayloadLoggingEnabled) {
-            console.println("debug: attempting to export " + spans.size() + " spans to " + endpoint);
-            console.println("debug: span Payload: " + spans);
+            logger.printInfoLog("Attempting to export " + spans.size() + " spans to " + endpoint);
+            logger.printInfoLog("Span Payload: " + spans);
         }
         CompletableResultCode result = exporter.export(spans);
         result.whenComplete(() -> {
             if (!result.isSuccess()) {
                 if (isErrorLoggingEnabled) {
-                    console.println("error :failed to export spans to " + endpoint);
+                    logger.printErrorLog("Failed to export spans to " + endpoint);
                 }
             }
         });
