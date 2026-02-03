@@ -85,7 +85,7 @@ subprojects {
             xml.enabled false
             html.enabled true
         }
-        def excludeFile = file('spotbugs-exclude.xml')
+        def excludeFile = file('spotbugs-main-exclude.xml')
         if (excludeFile.exists()) {
             it.excludeFilter = excludeFile
         }

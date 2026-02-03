@@ -9,12 +9,12 @@ import io.ballerina.runtime.api.values.BString;
 
 public class JaegerLogger {
     private static final String BALLERINA_ORG_NAME = "ballerina";
-    private static final String BALLERINAX_ORG_NAME= "ballerinax";
+    private static final String BALLERINAX_ORG_NAME = "ballerinax";
     private static final String JAEGER_MODULE_NAME = "jaeger";
     private static final String LOG_MODULE_NAME = "log";
-    private final Environment environment;
     private final Module logModule;
     private final BMap<BString, Object> keyValues;
+    private final Environment environment;
 
     public JaegerLogger(Environment environment) {
         this.environment = environment;
