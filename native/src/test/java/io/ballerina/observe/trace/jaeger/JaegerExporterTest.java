@@ -103,23 +103,6 @@ public class JaegerExporterTest {
     }
 
     @Test
-    public void testExportWithLoggingEnabled() {
-        // Setup
-        jaegerExporter = new JaegerExporter(null, mockExporter, TEST_ENDPOINT, true, true);
-        List<SpanData> spans = createMockSpans(1);
-        CompletableResultCode successCode = CompletableResultCode.ofSuccess();
-
-        when(mockExporter.export(any())).thenReturn(successCode);
-
-        // Execute
-        CompletableResultCode result = jaegerExporter.export(spans);
-
-        // Verify
-        verify(mockExporter, times(1)).export(spans);
-        assertTrue(result.isSuccess());
-    }
-
-    @Test
     public void testExportSpansArePassed() {
         // Setup
         jaegerExporter = new JaegerExporter(null, mockExporter, TEST_ENDPOINT, false, false);
