@@ -18,7 +18,6 @@
 package io.ballerina.observe.trace.jaeger;
 
 import io.ballerina.observe.trace.jaeger.sampler.RateLimitingSampler;
-import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.values.BDecimal;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.observability.tracer.spi.TracerProvider;
@@ -59,10 +58,10 @@ public class JaegerTracerProvider implements TracerProvider {
     public void init() {    // Do Nothing
     }
 
-    public static void initializeConfigurations(Environment env, BString agentHostname, int agentPort,
+    public static void initializeConfigurations(BString agentHostname, int agentPort,
                                                 BString samplerType, BDecimal samplerParam, int reporterFlushInterval,
-                                                int reporterBufferSize, boolean isErrorLoggingEnabled,
-                                                boolean isPayloadLoggingEnabled) {
+                                                int reporterBufferSize, boolean traceLogConsole, BString traceLogFile,
+                                                BString traceLogLevel) {
 
         String reporterEndpoint = agentHostname + ":" + agentPort;
 
@@ -73,10 +72,11 @@ public class JaegerTracerProvider implements TracerProvider {
 
         OtlpGrpcSpanExporter exporter = OtlpGrpcSpanExporter.builder()
                 .setChannel(jaegerChannel)
+                .setTimeout(5, TimeUnit.SECONDS)
                 .build();
 
-        SpanExporter jaegerExporter = new JaegerExporter(env, exporter, reporterEndpoint, isErrorLoggingEnabled,
-                isPayloadLoggingEnabled);
+        SpanExporter jaegerExporter = new JaegerExporter(exporter, reporterEndpoint, traceLogConsole,
+                traceLogFile.getValue(), traceLogLevel.getValue());
 
         tracerProviderBuilder = SdkTracerProvider.builder()
                 .addSpanProcessor(BatchSpanProcessor

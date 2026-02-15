@@ -36,6 +36,7 @@ samplerType="const"             # Optional Configuration. Default value is const
 samplerParam=1                  # Optional Configuration. Default value is 1
 reporterFlushInterval=1000      # Optional Configuration. Default value is 1000
 reporterBufferSize=10000        # Optional Configuration. Default value is 10000
-isTraceLoggingEnabled=false     # Optional Configuration. Default value is false
-isPayloadLoggingEnabled=false   # Optional Configuration. Default value is false
+traceLogConsole = false         # Optional Configuration. Default value is false
+traceLogFile = ""               # Optional Configuration. Default value is empty string
+traceLogLevel = "info"          # Optional Configuration. Default value is info. Possible values are debug, info, warn, error
 ```

@@ -54,7 +54,7 @@ public class JaegerExporterTest {
     @Test
     public void testExportSuccess() {
         // Setup
-        jaegerExporter = new JaegerExporter(null, mockExporter, TEST_ENDPOINT, false, false);
+        jaegerExporter = new JaegerExporter(mockExporter, TEST_ENDPOINT, false, "", "info");
         List<SpanData> spans = createMockSpans(3);
         CompletableResultCode successCode = CompletableResultCode.ofSuccess();
 
@@ -71,7 +71,7 @@ public class JaegerExporterTest {
     @Test
     public void testExportFailure() {
         // Setup
-        jaegerExporter = new JaegerExporter(null, mockExporter, TEST_ENDPOINT, false, false);
+        jaegerExporter = new JaegerExporter(mockExporter, TEST_ENDPOINT, false, "", "info");
         List<SpanData> spans = createMockSpans(2);
         CompletableResultCode failureCode = CompletableResultCode.ofFailure();
 
@@ -88,7 +88,7 @@ public class JaegerExporterTest {
     @Test
     public void testExportWithEmptySpans() {
         // Setup
-        jaegerExporter = new JaegerExporter(null, mockExporter, TEST_ENDPOINT, false, false);
+        jaegerExporter = new JaegerExporter(mockExporter, TEST_ENDPOINT, false, "", "info");
         List<SpanData> spans = new ArrayList<>();
         CompletableResultCode successCode = CompletableResultCode.ofSuccess();
 
@@ -105,7 +105,7 @@ public class JaegerExporterTest {
     @Test
     public void testExportSpansArePassed() {
         // Setup
-        jaegerExporter = new JaegerExporter(null, mockExporter, TEST_ENDPOINT, false, false);
+        jaegerExporter = new JaegerExporter(mockExporter, TEST_ENDPOINT, false, "", "info");
         List<SpanData> spans = createMockSpans(5);
         CompletableResultCode successCode = CompletableResultCode.ofSuccess();
 
@@ -123,7 +123,7 @@ public class JaegerExporterTest {
     @Test
     public void testFlush() {
         // Setup
-        jaegerExporter = new JaegerExporter(null, mockExporter, TEST_ENDPOINT, false, false);
+        jaegerExporter = new JaegerExporter(mockExporter, TEST_ENDPOINT, false, "", "info");
         CompletableResultCode successCode = CompletableResultCode.ofSuccess();
 
         when(mockExporter.flush()).thenReturn(successCode);
@@ -139,7 +139,7 @@ public class JaegerExporterTest {
     @Test
     public void testShutdown() {
         // Setup
-        jaegerExporter = new JaegerExporter(null, mockExporter, TEST_ENDPOINT, false, false);
+        jaegerExporter = new JaegerExporter(mockExporter, TEST_ENDPOINT, false, "", "info");
         CompletableResultCode successCode = CompletableResultCode.ofSuccess();
 
         when(mockExporter.shutdown()).thenReturn(successCode);
@@ -155,7 +155,7 @@ public class JaegerExporterTest {
     @Test
     public void testMultipleExports() {
         // Setup
-        jaegerExporter = new JaegerExporter(null, mockExporter, TEST_ENDPOINT, false, false);
+        jaegerExporter = new JaegerExporter(mockExporter, TEST_ENDPOINT, false, "", "info");
         List<SpanData> spans1 = createMockSpans(2);
         List<SpanData> spans2 = createMockSpans(3);
         CompletableResultCode successCode = CompletableResultCode.ofSuccess();
