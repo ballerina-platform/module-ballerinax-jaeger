@@ -20,7 +20,11 @@ package io.ballerina.observe.trace.jaeger.logging;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.logging.*;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public final class JaegerTraceLogger {
     public static final String JAEGER_TRACE_LOG = "jaeger.tracelog";

@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.logging.Level;
 
 public final class JaegerExporter implements SpanExporter {
