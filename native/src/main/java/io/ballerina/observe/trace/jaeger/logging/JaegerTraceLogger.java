@@ -20,16 +20,17 @@ package io.ballerina.observe.trace.jaeger.logging;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 public final class JaegerTraceLogger {
     public static final String JAEGER_TRACE_LOG = "jaeger.tracelog";
     private static final Logger traceLogger = Logger.getLogger(JAEGER_TRACE_LOG);
 
     public JaegerTraceLogger(boolean traceLogConsole, Path logFilePath) {
+        for (Handler handler : traceLogger.getHandlers()) {
+            traceLogger.removeHandler(handler);
+            handler.close();
+        }
         if (traceLogConsole) {
             ConsoleHandler consoleHandler = new ConsoleHandler();
             consoleHandler.setFormatter(new JaegerTraceLogFormatter());
@@ -50,6 +51,10 @@ public final class JaegerTraceLogger {
 
     public JaegerTraceLogger() {
         traceLogger.setUseParentHandlers(false);
+    }
+
+    public boolean isLoggable(Level level) {
+        return traceLogger.isLoggable(level);
     }
 
     public void setLogLevel(Level logLevel) {

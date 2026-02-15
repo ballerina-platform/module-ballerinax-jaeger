@@ -36,8 +36,8 @@ public final class JaegerExporter implements SpanExporter {
                           boolean traceLogConsole, String traceLogFile, String traceLogLevel) {
         this.exporter = exporter;
         this.endpoint = endpoint;
-        if (traceLogConsole || !Objects.equals(traceLogFile, "")) {
-            Path logFilePath = Objects.equals(traceLogFile, "") ? null : Path.of(traceLogFile);
+        if (traceLogConsole || !traceLogFile.isEmpty()) {
+            Path logFilePath = traceLogFile.isEmpty() ? null : Path.of(traceLogFile);
             this.tracerLogger = new JaegerTraceLogger(traceLogConsole, logFilePath);
             this.tracerLogger.setLogLevel(getTraceLogLevel(traceLogLevel));
         } else {
@@ -48,13 +48,16 @@ public final class JaegerExporter implements SpanExporter {
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
-        tracerLogger.printInfo("Attempting to export " + spans.size() + " spans to " + endpoint);
-        tracerLogger.printInfo("Span Payload: " + spans);
-
+        if (tracerLogger.isLoggable(Level.INFO)) {
+            tracerLogger.printInfo("Attempting to export " + spans.size() + " spans to " + endpoint);
+            tracerLogger.printInfo("Span Payload: " + spans);
+        }
         CompletableResultCode result = exporter.export(spans);
         result.whenComplete(() -> {
             if (!result.isSuccess()) {
-                tracerLogger.printSevere("Failed to export spans to " + endpoint);
+                if (tracerLogger.isLoggable(Level.SEVERE)) {
+                    tracerLogger.printSevere("Failed to export spans to " + endpoint);
+                }
             }
         });
         return result;

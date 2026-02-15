@@ -72,7 +72,6 @@ public class JaegerTracerProvider implements TracerProvider {
 
         OtlpGrpcSpanExporter exporter = OtlpGrpcSpanExporter.builder()
                 .setChannel(jaegerChannel)
-                .setTimeout(5, TimeUnit.SECONDS)
                 .build();
 
         SpanExporter jaegerExporter = new JaegerExporter(exporter, reporterEndpoint, traceLogConsole,
