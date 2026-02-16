@@ -9,6 +9,8 @@ module io.ballerina.observe.trace.extension.jaeger {
     requires io.opentelemetry.exporter.otlp.trace;
     requires grpc.api;
     requires grpc.netty.shaded;
+    requires java.logging;
+    requires grpc.core;
 
     provides io.ballerina.runtime.observability.tracer.spi.TracerProvider
             with io.ballerina.observe.trace.jaeger.JaegerTracerProvider;

@@ -16,6 +16,7 @@
 
 plugins {
     id 'java-library'
+    id 'jacoco'
 }
 
 description = 'Ballerina - Jaeger Extension - Native Module'
@@ -61,6 +62,10 @@ dependencies {
     implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
     implementation("io.netty:netty-handler:${nettyVersion}")
     implementation "io.perfmark:perfmark-api:${perfmarkVersion}"
+
+    testImplementation "org.testng:testng:${testngVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation "io.opentelemetry:opentelemetry-sdk-testing:${openTelemetrySDKVersion}"
 }
 
 compileJava {
@@ -69,6 +74,37 @@ compileJava {
                 '--module-path', classpath.asPath,
         ]
         classpath = files()
+    }
+}
+
+test {
+    useTestNG() {
+        suites 'src/test/resources/testng.xml'
+    }
+
+    testLogging {
+        events "PASSED", "FAILED", "SKIPPED"
+        showStackTraces true
+        showStandardStreams true
+        exceptionFormat "full"
+        afterSuite { desc, result ->
+            if (!desc.parent) { // will match the outermost suite
+                def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+                def startItem = '|  ', endItem = '  |'
+                def repeatLength = startItem.length() + output.length() + endItem.length()
+                println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+            }
+        }
+    }
+
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
     }
 }
 
@@ -102,7 +138,7 @@ publishing {
 
 task copyJavaClassFiles(type: Copy) {
     dependsOn(compileJava)
-    from("${project.buildDir}/classes") {
+    from("${project.buildDir}/classes/java/main") {
         exclude '**/module-info.class'
         include '**/*.class'
     }
