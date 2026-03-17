@@ -18,6 +18,7 @@
 org = "ballerinax"
 name = "jaeger"
 version = "@toml.version@"
+keywords = ["Type/Connector", "Area/Developer Tools", "Vendor/Jaeger", "Observability", "tracing"]
 distribution = "2201.11.0"
 
 [platform.java21]
