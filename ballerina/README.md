@@ -1,8 +1,13 @@
-## Package Overview
+## Overview
 
-The Jaeger Observability Extension is one of the tracing extensions of the<a target="_blank" href="https://ballerina.io/"> Ballerina</a> language.
+The Jaeger Observability Extension provides an implementation for tracing and publishing traces to a [Jaeger](https://www.jaegertracing.io/) Agent.
 
-It provides an implementation for tracing and publishing traces to a Jaeger Agent.
+### Key Features
+
+- Publish distributed traces to a Jaeger Agent via OpenTelemetry
+- Configurable sampler type and parameters
+- Support for trace logging to console and file
+- Configurable reporter flush interval and buffer size
 
 ## Enabling Jaeger Extension
 
