@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (c) 2026, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+  ~ Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
   ~
   ~ WSO2 Inc. licenses this file to you under the Apache License,
   ~ Version 2.0 (the "License"); you may not use this file except
@@ -17,24 +17,6 @@
   ~
   -->
 <FindBugsFilter>
-    <!-- Test classes don't need to follow all production code rules -->
-    <Match>
-        <Class name="~.*Test"/>
-        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
-    </Match>
-
-    <!-- Test fields initialized by TestNG setup methods -->
-    <Match>
-        <Class name="~.*Test"/>
-        <Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
-    </Match>
-
-    <!-- Mock objects and test utilities can expose internal representations -->
-    <Match>
-        <Class name="~.*Test"/>
-        <Bug pattern="MS_EXPOSE_REP"/>
-    </Match>
-
     <!-- Pre-existing issues surfaced by SpotBugs 4.9.x (bundled in plugin >= 6.2.0) -->
     <Match>
         <BugCode name="THROWS"/>
@@ -46,4 +28,3 @@
         <BugCode name="USELESS_STRING"/>
     </Match>
 </FindBugsFilter>
-

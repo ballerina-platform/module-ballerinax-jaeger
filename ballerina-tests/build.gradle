@@ -17,6 +17,12 @@
  */
 
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.process.ExecOperations
+import javax.inject.Inject
+
+abstract class BallerinaTestsExecHelper {
+    @Inject abstract ExecOperations getExecOperations()
+}
 
 description = 'Ballerina - Jaeger Extension - Ballerina Tests'
 
@@ -83,6 +89,25 @@ gradle.taskGraph.whenReady { graph ->
     }
 }
 
+ext.testsExecHelper = project.objects.newInstance(BallerinaTestsExecHelper)
+
+ext.executeBalCommand = { String command, String dir, env = "" ->
+    try {
+        project.ext.testsExecHelper.execOperations.exec {
+            workingDir dir
+            environment environment: env
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "bal.bat ${command} && exit %%ERRORLEVEL%%"
+            } else {
+                commandLine 'sh', '-c', "bal ${command}"
+            }
+        }
+    } catch (Exception e) {
+        println("bal command failed. " + e.message)
+        throw e
+    }
+}
+
 task initializeVariables {
     if (project.hasProperty("groups")) {
         groupParams = "--groups ${project.findProperty("groups")}"
@@ -126,13 +151,13 @@ task startJaegerServer() {
         // for Windows OS.
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
             def stdOut = new ByteArrayOutputStream()
-            exec {
+            project.ext.testsExecHelper.execOperations.exec {
                 commandLine 'sh', '-c', "docker ps --filter name=jaeger-server"
                 standardOutput = stdOut
             }
             if (!stdOut.toString().contains("jaeger-server")) {
                 println "Starting Jaeger server."
-                exec {
+                project.ext.testsExecHelper.execOperations.exec {
                     commandLine 'sh', '-c', "docker compose -f $project.projectDir/resources/jaeger-server/docker-compose.yml up -d"
                     standardOutput = stdOut
                 }
@@ -152,13 +177,13 @@ task stopJaegerServer() {
         // in Windows OS.
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
             def stdOut = new ByteArrayOutputStream()
-            exec {
+            project.ext.testsExecHelper.execOperations.exec {
                 commandLine 'sh', '-c', "docker ps --filter name=jaeger-server"
                 standardOutput = stdOut
             }
             if (stdOut.toString().contains("jaeger-server")) {
                 println "Stopping LDAP server."
-                exec {
+                project.ext.testsExecHelper.execOperations.exec {
                     commandLine 'sh', '-c', "docker stop jaeger-server"
                     standardOutput = stdOut
                 }
