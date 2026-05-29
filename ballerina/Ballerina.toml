@@ -17,127 +17,128 @@
 [package]
 org = "ballerinax"
 name = "jaeger"
-version = "1.1.0"
-distribution = "2201.11.0"
+version = "1.1.1"
+keywords = ["Type/Driver", "Area/Developer Tools", "Vendor/Jaeger", "Observability", "tracing"]
+distribution = "2201.14.0-20260527-050400-74f7e6bf"
 
-[platform.java21]
+[platform.java25]
 graalvmCompatible = true
 
-[[platform.java21.dependency]]
-path = "../native/build/libs/jaeger-extension-native-1.1.0.jar"
+[[platform.java25.dependency]]
+path = "../native/build/libs/jaeger-extension-native-1.1.1-SNAPSHOT.jar"
 groupId = "ballerina"
 artifactId = "jaeger-extension-native"
-version = "1.1.0"
+version = "1.1.1-SNAPSHOT"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/opentelemetry-sdk-trace-1.32.0.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-sdk-trace"
 version = "1.32.0"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/opentelemetry-sdk-common-1.32.0.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-sdk-common"
 version = "1.32.0"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/opentelemetry-semconv-1.21.0-alpha.jar"
 groupId = "io.opentelemetry.semconv"
 artifactId = "opentelemetry-semconv"
 version = "1.21.0-alpha"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/opentelemetry-proto-1.7.1-alpha.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-proto"
 version = "1.7.1-alpha"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/opentelemetry-exporter-otlp-trace-1.14.0.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-exporter-otlp-trace"
 version = "1.14.0"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/opentelemetry-exporter-otlp-common-1.14.0.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-exporter-otlp-common"
 version = "1.14.0"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/opentelemetry-extension-trace-propagators-1.32.0.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-extension-trace-propagators"
 version = "1.32.0"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/guava-33.2.0-jre.jar"
 groupId = "com.google.guava"
 artifactId = "guava"
 version = "33.2.0-jre"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/failureaccess-1.0.1.jar"
 groupId = "com.google.guava"
 artifactId = "failureaccess"
 version = "1.0.1"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/grpc-api-1.54.1.jar"
 groupId = "io.grpc"
 artifactId = "grpc-api"
 version = "1.54.1"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/grpc-context-1.54.1.jar"
 groupId = "io.grpc"
 artifactId = "grpc-context"
 version = "1.54.1"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/grpc-core-1.54.1.jar"
 groupId = "io.grpc"
 artifactId = "grpc-core"
 version = "1.54.1"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/grpc-stub-1.54.1.jar"
 groupId = "io.grpc"
 artifactId = "grpc-stub"
 version = "1.54.1"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/grpc-protobuf-1.54.1.jar"
 groupId = "io.grpc"
 artifactId = "grpc-protobuf"
 version = "1.54.1"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/grpc-protobuf-lite-1.54.1.jar"
 groupId = "io.grpc"
 artifactId = "grpc-protobuf-lite"
 version = "1.54.1"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/grpc-netty-shaded-1.54.1.jar"
 groupId = "io.grpc"
 artifactId = "grpc-netty-shaded"
 version = "1.54.1"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/protobuf-java-3.25.5.jar"
 groupId = "com.google.protobuf"
 artifactId = "protobuf-java"
 version = "3.25.5"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/netty-handler-4.1.108.Final.jar"
 groupId = "io.netty"
 artifactId = "netty-handler"
 version = "4.1.108.Final"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 path = "./lib/perfmark-api-0.23.0.jar"
 groupId = "io.perfmark"
 artifactId = "perfmark-api"
