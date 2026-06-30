@@ -55,15 +55,9 @@ artifactId = "opentelemetry-proto"
 version = "@opentelemetryProto.version@"
 
 [[platform.java21.dependency]]
-path = "./lib/opentelemetry-exporter-otlp-trace-@opentelemetryExporter.version@.jar"
+path = "./lib/opentelemetry-exporter-otlp-@opentelemetryExporter.version@.jar"
 groupId = "io.opentelemetry"
-artifactId = "opentelemetry-exporter-otlp-trace"
-version = "@opentelemetryExporter.version@"
-
-[[platform.java21.dependency]]
-path = "./lib/opentelemetry-exporter-otlp-common-@opentelemetryExporter.version@.jar"
-groupId = "io.opentelemetry"
-artifactId = "opentelemetry-exporter-otlp-common"
+artifactId = "opentelemetry-exporter-otlp"
 version = "@opentelemetryExporter.version@"
 
 [[platform.java21.dependency]]

@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.internal.RateLimiter;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
@@ -32,7 +31,11 @@ public class RateLimitingSampler implements Sampler {
     private static final AttributeKey<String> SAMPLER_TYPE = stringKey("sampler.type");
     private static final AttributeKey<Double> SAMPLER_PARAM = doubleKey("sampler.param");
 
-    private final RateLimiter rateLimiter;
+    private final double maxUsagePerSecond;
+    private final double maxBalance;
+    private final Clock clock;
+    private double balance;
+    private long lastUpdateNanos;
     private final SamplingResult onSamplingResult;
     private final SamplingResult offSamplingResult;
     private final String description;
@@ -43,8 +46,11 @@ public class RateLimitingSampler implements Sampler {
      * @param maxTracesPerSecond the maximum number of sampled traces per second.
      */
     public RateLimitingSampler(int maxTracesPerSecond) {
-        double maxBalance = maxTracesPerSecond < 1.0 ? 1.0 : maxTracesPerSecond;
-        this.rateLimiter = new RateLimiter(maxTracesPerSecond, maxBalance, Clock.getDefault());
+        this.maxUsagePerSecond = maxTracesPerSecond;
+        this.maxBalance = maxTracesPerSecond < 1.0 ? 1.0 : maxTracesPerSecond;
+        this.clock = Clock.getDefault();
+        this.balance = this.maxBalance;
+        this.lastUpdateNanos = clock.now();
         Attributes attributes =
                 Attributes.of(SAMPLER_TYPE, TYPE, SAMPLER_PARAM, (double) maxTracesPerSecond);
         this.onSamplingResult = SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE, attributes);
@@ -60,7 +66,21 @@ public class RateLimitingSampler implements Sampler {
             SpanKind spanKind,
             Attributes attributes,
             List<LinkData> parentLinks) {
-        return this.rateLimiter.trySpend(1.0) ? onSamplingResult : offSamplingResult;
+        return trySpend(1.0) ? onSamplingResult : offSamplingResult;
+    }
+
+    private synchronized boolean trySpend(double itemCost) {
+        long currentTime = clock.now();
+        balance += (currentTime - lastUpdateNanos) * 1e-9 * maxUsagePerSecond;
+        lastUpdateNanos = currentTime;
+        if (balance > maxBalance) {
+            balance = maxBalance;
+        }
+        if (balance >= itemCost) {
+            balance -= itemCost;
+            return true;
+        }
+        return false;
     }
 
     @Override
