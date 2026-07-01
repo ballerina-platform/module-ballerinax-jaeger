@@ -40,7 +40,7 @@ dependencies {
     externalJars "io.opentelemetry:opentelemetry-sdk-common:${openTelemetryVersion}"
     externalJars "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemconvVersion}"
     externalJars "io.opentelemetry:opentelemetry-proto:${openTelemetryProtoVersion}"
-    externalJars "io.opentelemetry:opentelemetry-exporter-otlp-trace:${openTelemetryExporterVersion}"
+    externalJars "io.opentelemetry:opentelemetry-exporter-otlp:${openTelemetryExporterVersion}"
     externalJars "io.opentelemetry:opentelemetry-exporter-otlp-common:${openTelemetryExporterVersion}"
     externalJars "io.opentelemetry:opentelemetry-extension-trace-propagators:${openTelemetryVersion}"
     externalJars "com.google.guava:guava:${guavaVersion}"
