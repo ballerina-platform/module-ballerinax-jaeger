@@ -61,6 +61,12 @@ artifactId = "opentelemetry-exporter-otlp"
 version = "1.63.0"
 
 [[platform.java21.dependency]]
+path = "./lib/opentelemetry-exporter-otlp-common-1.63.0.jar"
+groupId = "io.opentelemetry"
+artifactId = "opentelemetry-exporter-otlp-common"
+version = "1.63.0"
+
+[[platform.java21.dependency]]
 path = "./lib/opentelemetry-extension-trace-propagators-1.63.0.jar"
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-extension-trace-propagators"
