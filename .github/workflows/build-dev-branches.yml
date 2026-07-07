@@ -6,7 +6,7 @@ on:
       ballerina_version:
         description: 'Ballerina version'
         required: true
-        default: '2201.10.0'
+        default: '2201.12.0'
   push:
     branches-ignore:
       - main
@@ -14,7 +14,7 @@ on:
       - "automated/dependency_version_update_tmp"
 
 env:
-  BALLERINA_DISTRIBUTION_VERSION: 2201.11.0    # Update this with the latest Ballerina version
+  BALLERINA_DISTRIBUTION_VERSION: 2201.12.0    # Update this with the latest Ballerina version
 
 jobs:
   ubuntu-build:
