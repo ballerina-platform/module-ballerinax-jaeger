@@ -17,17 +17,18 @@
 [package]
 org = "ballerinax"
 name = "jaeger"
-version = "1.1.0"
+version = "1.1.1"
+keywords = ["Type/Driver", "Area/Developer Tools", "Vendor/Jaeger", "Observability", "tracing"]
 distribution = "2201.11.0"
 
 [platform.java21]
 graalvmCompatible = true
 
 [[platform.java21.dependency]]
-path = "../native/build/libs/jaeger-extension-native-1.1.0.jar"
+path = "../native/build/libs/jaeger-extension-native-1.1.1.jar"
 groupId = "ballerina"
 artifactId = "jaeger-extension-native"
-version = "1.1.0"
+version = "1.1.1"
 
 [[platform.java21.dependency]]
 path = "./lib/opentelemetry-sdk-trace-1.32.0.jar"
@@ -84,46 +85,46 @@ artifactId = "failureaccess"
 version = "1.0.1"
 
 [[platform.java21.dependency]]
-path = "./lib/grpc-api-1.54.1.jar"
+path = "./lib/grpc-api-1.75.0.jar"
 groupId = "io.grpc"
 artifactId = "grpc-api"
-version = "1.54.1"
+version = "1.75.0"
 
 [[platform.java21.dependency]]
-path = "./lib/grpc-context-1.54.1.jar"
+path = "./lib/grpc-context-1.75.0.jar"
 groupId = "io.grpc"
 artifactId = "grpc-context"
-version = "1.54.1"
+version = "1.75.0"
 
 [[platform.java21.dependency]]
-path = "./lib/grpc-core-1.54.1.jar"
+path = "./lib/grpc-core-1.75.0.jar"
 groupId = "io.grpc"
 artifactId = "grpc-core"
-version = "1.54.1"
+version = "1.75.0"
 
 [[platform.java21.dependency]]
-path = "./lib/grpc-stub-1.54.1.jar"
+path = "./lib/grpc-stub-1.75.0.jar"
 groupId = "io.grpc"
 artifactId = "grpc-stub"
-version = "1.54.1"
+version = "1.75.0"
 
 [[platform.java21.dependency]]
-path = "./lib/grpc-protobuf-1.54.1.jar"
+path = "./lib/grpc-protobuf-1.75.0.jar"
 groupId = "io.grpc"
 artifactId = "grpc-protobuf"
-version = "1.54.1"
+version = "1.75.0"
 
 [[platform.java21.dependency]]
-path = "./lib/grpc-protobuf-lite-1.54.1.jar"
+path = "./lib/grpc-protobuf-lite-1.75.0.jar"
 groupId = "io.grpc"
 artifactId = "grpc-protobuf-lite"
-version = "1.54.1"
+version = "1.75.0"
 
 [[platform.java21.dependency]]
-path = "./lib/grpc-netty-shaded-1.54.1.jar"
+path = "./lib/grpc-netty-shaded-1.75.0.jar"
 groupId = "io.grpc"
 artifactId = "grpc-netty-shaded"
-version = "1.54.1"
+version = "1.75.0"
 
 [[platform.java21.dependency]]
 path = "./lib/protobuf-java-3.25.5.jar"
@@ -132,10 +133,10 @@ artifactId = "protobuf-java"
 version = "3.25.5"
 
 [[platform.java21.dependency]]
-path = "./lib/netty-handler-4.1.108.Final.jar"
+path = "./lib/netty-handler-4.1.135.Final.jar"
 groupId = "io.netty"
 artifactId = "netty-handler"
-version = "4.1.108.Final"
+version = "4.1.135.Final"
 
 [[platform.java21.dependency]]
 path = "./lib/perfmark-api-0.23.0.jar"
