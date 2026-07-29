@@ -17,17 +17,18 @@
 [package]
 org = "ballerinax"
 name = "jaeger"
-version = "1.1.0"
+version = "1.1.1"
+keywords = ["Type/Driver", "Area/Developer Tools", "Vendor/Jaeger", "Observability", "tracing"]
 distribution = "2201.11.0"
 
 [platform.java21]
 graalvmCompatible = true
 
 [[platform.java21.dependency]]
-path = "../native/build/libs/jaeger-extension-native-1.1.0.jar"
+path = "../native/build/libs/jaeger-extension-native-1.1.1-SNAPSHOT.jar"
 groupId = "ballerina"
 artifactId = "jaeger-extension-native"
-version = "1.1.0"
+version = "1.1.1-SNAPSHOT"
 
 [[platform.java21.dependency]]
 path = "./lib/opentelemetry-sdk-trace-1.32.0.jar"
@@ -132,10 +133,10 @@ artifactId = "protobuf-java"
 version = "3.25.5"
 
 [[platform.java21.dependency]]
-path = "./lib/netty-handler-4.1.108.Final.jar"
+path = "./lib/netty-handler-4.1.135.Final.jar"
 groupId = "io.netty"
 artifactId = "netty-handler"
-version = "4.1.108.Final"
+version = "4.1.135.Final"
 
 [[platform.java21.dependency]]
 path = "./lib/perfmark-api-0.23.0.jar"
