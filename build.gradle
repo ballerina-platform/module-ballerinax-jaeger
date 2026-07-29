@@ -75,6 +75,14 @@ subprojects {
         toolVersion '10.12.1'
     }
 
+    plugins.withId('java') {
+        java {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(25)
+            }
+        }
+    }
+
     spotbugsMain {
         def classLoader = plugins["com.github.spotbugs"].class.classLoader
         def SpotBugsConfidence = classLoader.findLoadedClass("com.github.spotbugs.snom.Confidence")
@@ -82,8 +90,8 @@ subprojects {
         it.effort = SpotBugsEffort.MAX
         it.reportLevel = SpotBugsConfidence.LOW
         it.reports {
-            xml.enabled false
-            html.enabled true
+            xml.required = false
+            html.required = true
         }
         def excludeFile = file('spotbugs-main-exclude.xml')
         if (excludeFile.exists()) {
@@ -98,8 +106,8 @@ subprojects {
         it.effort = SpotBugsEffort.MAX
         it.reportLevel = SpotBugsConfidence.LOW
         it.reports {
-            xml.enabled false
-            html.enabled true
+            xml.required = false
+            html.required = true
         }
         def excludeFile = file('spotbugs-test-exclude.xml')
         if (excludeFile.exists()) {
@@ -116,23 +124,6 @@ subprojects {
 
 def moduleVersion = project.version.replace("-SNAPSHOT", "")
 
-def executeBalCommand(String command, String dir, env = "") {
-    try {
-        exec {
-            workingDir dir
-            environment environment: env
-            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "bal.bat ${command} && exit %%ERRORLEVEL%%"
-            } else {
-                commandLine 'sh', '-c', "bal ${command}"
-            }
-        }
-    } catch (Exception e) {
-        println("bal command failed. " + e.message)
-        throw e
-    }
-}
-
 release {
     failOnPublishNeeded = false
     failOnSnapshotDependencies = true
@@ -147,7 +138,7 @@ release {
     }
 }
 
-task build {
+tasks.named('build') {
     dependsOn('jaeger-extension-ballerina:build')
 }
 
@@ -157,7 +148,7 @@ task codeCoverageReport(type: JacocoReport) {
     dependsOn(':jaeger-extension-native:jacocoTestReport')
 
     executionData fileTree(project.rootDir.absolutePath).include("**/*.exec")
-    additionalClassDirs files("${buildDir}/classes")
+    additionalClassDirs files(layout.buildDirectory.dir("classes").get().asFile)
 
     subprojects.each {
         sourceSets it.sourceSets.main
@@ -176,8 +167,8 @@ task codeCoverageReport(type: JacocoReport) {
     reports {
         xml.required = true
         html.required = true
-        xml.destination = new File("${buildDir}/reports/jacoco/report.xml")
-        html.destination = new File("${buildDir}/reports/jacoco/report.html")
+        xml.outputLocation = layout.buildDirectory.file("reports/jacoco/report.xml")
+        html.outputLocation = layout.buildDirectory.dir("reports/jacoco/report.html")
     }
 
     onlyIf = {

@@ -15,6 +15,47 @@
  */
 
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.process.ExecOperations
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.jvm.toolchain.JavaToolchainService
+import javax.inject.Inject
+
+abstract class BallerinaExecHelper {
+    @Inject abstract ExecOperations getExecOperations()
+}
+
+abstract class PatchBallerinaScriptsTask extends DefaultTask {
+    @Inject abstract JavaToolchainService getJavaToolchainService()
+    @Input abstract Property<String> getJballerinaToolsBinPath()
+    @Input abstract Property<String> getBallerinaRuntimeBinPath()
+
+    @TaskAction
+    void patch() {
+        def launcher = javaToolchainService.launcherFor { spec ->
+            spec.languageVersion.set(JavaLanguageVersion.of(25))
+        }.get()
+        def java25Home = launcher.executablePath.asFile.parentFile.parentFile.absolutePath
+
+        [new File(jballerinaToolsBinPath.get()), new File(ballerinaRuntimeBinPath.get())].each { binDir ->
+            if (binDir.exists()) {
+                binDir.eachFile { file ->
+                    file.setExecutable(true)
+                    if (!file.name.endsWith('.bat') && !file.name.endsWith('.cmd')) {
+                        def original = file.text
+                        def lines = original.split('\n').toList()
+                        lines = lines.collect { it.replace('--sun-misc-unsafe-memory-access=allow', '').trim() }.findAll { !it.isEmpty() }
+                        def shebangIdx = lines.findIndexOf { it.startsWith('#!') }
+                        if (shebangIdx >= 0 && !lines.any { it.startsWith('export JAVA_HOME=') }) {
+                            lines.add(shebangIdx + 1, "export JAVA_HOME='${java25Home}'")
+                        }
+                        def patched = lines.join('\n') + '\n'
+                        if (patched != original) { file.text = patched }
+                    }
+                }
+            }
+        }
+    }
+}
 
 description = 'Ballerina - Jaeger Extension - Ballerina Module'
 
@@ -79,12 +120,12 @@ def packageName = "jaeger"
 def ballerinaTomlFile = new File("${project.projectDir}/Ballerina.toml")
 def ballerinaTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/Ballerina.toml")
 def artifactBallerinaDocs = file("${project.projectDir}/build/docs_parent/")
-def artifactCacheParent = file("${project.buildDir}/cache_parent/")
-def artifactLibParent = file("${project.buildDir}/lib_parent/")
+def artifactCacheParent = file("${project.layout.buildDirectory.get().asFile}/cache_parent/")
+def artifactLibParent = file("${project.layout.buildDirectory.get().asFile}/lib_parent/")
 def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
 def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
-def artifactJar = file("$project.projectDir/target/cache/${packageOrg}/${packageName}/${tomlVersion}/java21/")
-def platform = "java21"
+def artifactJar = file("$project.projectDir/target/cache/${packageOrg}/${packageName}/${tomlVersion}/java25/")
+def platform = "java25"
 def skipTests = false
 
 def stripBallerinaExtensionVersion(String extVersion) {
@@ -98,6 +139,25 @@ def stripBallerinaExtensionVersion(String extVersion) {
         }
     } else {
         return extVersion.replace("${project.ext.snapshotVersion}", "")
+    }
+}
+
+ext.execHelper = project.objects.newInstance(BallerinaExecHelper)
+
+ext.executeBalCommand = { String command, String dir, env = "" ->
+    try {
+        project.ext.execHelper.execOperations.exec {
+            workingDir dir
+            environment environment: env
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "bal.bat ${command} && exit %%ERRORLEVEL%%"
+            } else {
+                commandLine 'sh', '-c', "bal ${command}"
+            }
+        }
+    } catch (Exception e) {
+        println("bal command failed. " + e.message)
+        throw e
     }
 }
 
@@ -132,7 +192,19 @@ task updateTomlVersions {
     }
 }
 
+task unpackJballerinaTools(type: Copy) {
+    configurations.jbalTools.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+        from zipTree(artifact.getFile())
+        into layout.buildDirectory.dir("jballerina-tools-${project.ballerinaLangVersion}").get().asFile
+    }
+}
 
+task patchBallerinaScripts(type: PatchBallerinaScriptsTask) {
+    dependsOn unpackJballerinaTools
+    outputs.upToDateWhen { !tasks.named('unpackJballerinaTools').get().didWork }
+    jballerinaToolsBinPath = layout.buildDirectory.dir("jballerina-tools-${project.ballerinaLangVersion}/bin").get().asFile.absolutePath
+    ballerinaRuntimeBinPath = "${rootProject.projectDir.absolutePath}/target/ballerina-runtime/bin"
+}
 
 task ballerinaBuild {
     dependsOn updateTomlVersions
@@ -180,7 +252,7 @@ task ballerinaBuild {
 
         copy {
             from file("$project.projectDir/target/apidocs/${packageName}")
-            into file("$project.buildDir/docs_parent/docs/${packageName}")
+            into file("${project.layout.buildDirectory.get().asFile}/docs_parent/docs/${packageName}")
         }
 
         boolean publishToCentral = project.hasProperty('publishToCentral') ? project.publishToCentral.toBoolean() : false
@@ -204,7 +276,7 @@ task ballerinaBuild {
 }
 
 task createArtifactZip(type: Zip) {
-    destinationDirectory = file("${project.buildDir}/distributions")
+    destinationDirectory = file("${project.layout.buildDirectory.get().asFile}/distributions")
     from ballerinaBuild
 }
 
@@ -250,9 +322,9 @@ publishing {
     }
 }
 
-build {
-    dependsOn ballerinaBuild
-}
+build.dependsOn ballerinaBuild
+build.dependsOn patchBallerinaScripts
+test.dependsOn patchBallerinaScripts
 
 publish {
     dependsOn ballerinaPublish
@@ -273,7 +345,7 @@ task publishBalaFileToLocal {
 
     doLast {
         if (!skipTests) {
-            exec {
+            project.ext.execHelper.execOperations.exec {
                 workingDir "${project.rootDir}/ballerina"
                 if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                     commandLine 'cmd', '/c', "bal.bat push --repository=local" +

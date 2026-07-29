@@ -138,7 +138,7 @@ publishing {
 
 task copyJavaClassFiles(type: Copy) {
     dependsOn(compileJava)
-    from("${project.buildDir}/classes/java/main") {
+    from(layout.buildDirectory.dir("classes/java/main").get().asFile) {
         exclude '**/module-info.class'
         include '**/*.class'
     }

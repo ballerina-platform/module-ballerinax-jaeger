@@ -2,7 +2,7 @@
 org = "ballerinax"
 name = "jaeger_server_tests"
 version = "0.1.0"
-distribution = "2201.11.0"
+distribution = "2201.14.0-20260527-050400-74f7e6bf"
 
 [build-options]
 observabilityIncluded = true
