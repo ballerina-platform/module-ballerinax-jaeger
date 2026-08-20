@@ -19,7 +19,7 @@ org = "ballerinax"
 name = "jaeger"
 version = "@toml.version@"
 keywords = ["Type/Driver", "Area/Developer Tools", "Vendor/Jaeger", "Observability", "tracing"]
-distribution = "2201.11.0"
+distribution = "2201.12.0"
 
 [platform.java21]
 graalvmCompatible = true
@@ -65,12 +65,6 @@ path = "./lib/opentelemetry-exporter-otlp-common-@opentelemetryExporter.version@
 groupId = "io.opentelemetry"
 artifactId = "opentelemetry-exporter-otlp-common"
 version = "@opentelemetryExporter.version@"
-
-[[platform.java21.dependency]]
-path = "./lib/opentelemetry-extension-trace-propagators-@opentelemetry.version@.jar"
-groupId = "io.opentelemetry"
-artifactId = "opentelemetry-extension-trace-propagators"
-version = "@opentelemetry.version@"
 
 [[platform.java21.dependency]]
 path = "./lib/guava-@guava.version@.jar"

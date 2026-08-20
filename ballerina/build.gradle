@@ -42,7 +42,6 @@ dependencies {
     externalJars "io.opentelemetry:opentelemetry-proto:${openTelemetryProtoVersion}"
     externalJars "io.opentelemetry:opentelemetry-exporter-otlp-trace:${openTelemetryExporterVersion}"
     externalJars "io.opentelemetry:opentelemetry-exporter-otlp-common:${openTelemetryExporterVersion}"
-    externalJars "io.opentelemetry:opentelemetry-extension-trace-propagators:${openTelemetryVersion}"
     externalJars "com.google.guava:guava:${guavaVersion}"
     externalJars "com.google.guava:failureaccess:${failureAccessVersion}"
     externalJars "io.grpc:grpc-api:${grpcVersion}"
@@ -69,6 +68,12 @@ jar {
     }
 }
 
+// CVE-2026-45292 (unbounded memory allocation parsing W3C baggage headers) affects
+// io.opentelemetry.extension.trace.propagation.JaegerPropagator/OtTracePropagator, which live in
+// opentelemetry-extension-trace-propagators. This module never references anything from that
+// artifact at all (see JaegerTracerProvider.getPropagators(), which only ever constructs
+// W3CTraceContextPropagator - a class from opentelemetry-api, a different artifact), so it's
+// simply not declared as a dependency here rather than shipped and patched.
 task copyExternalJarsToLib(type: Copy) {
     into "${project.projectDir}/lib"
     from configurations.externalJars
@@ -103,7 +108,6 @@ def stripBallerinaExtensionVersion(String extVersion) {
 
 task updateTomlVersions {
     doLast {
-        def openTelemetryVersion = project.openTelemetryVersion
         def openTelemetrySDKVersion = project.openTelemetrySDKVersion
         def openTelemetryExporterVersion = project.openTelemetryExporterVersion
         def openTelemetrySemconvVersion = project.openTelemetrySemconvVersion
@@ -117,7 +121,6 @@ task updateTomlVersions {
 
         def newConfig = ballerinaTomlFilePlaceHolder.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
-        newConfig = newConfig.replace("@opentelemetry.version@", openTelemetryVersion)
         newConfig = newConfig.replace("@opentelemetrySDK.version@", openTelemetrySDKVersion)
         newConfig = newConfig.replace("@opentelemetryExporter.version@", openTelemetryExporterVersion)
         newConfig = newConfig.replace("@opentelemetrySemconv.version@", openTelemetrySemconvVersion)
