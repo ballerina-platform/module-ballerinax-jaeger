@@ -127,10 +127,10 @@ artifactId = "protobuf-java"
 version = "3.25.5"
 
 [[platform.java21.dependency]]
-path = "./lib/netty-handler-4.1.135.Final.jar"
+path = "./lib/netty-handler-4.1.137.Final.jar"
 groupId = "io.netty"
 artifactId = "netty-handler"
-version = "4.1.135.Final"
+version = "4.1.137.Final"
 
 [[platform.java21.dependency]]
 path = "./lib/perfmark-api-0.23.0.jar"
