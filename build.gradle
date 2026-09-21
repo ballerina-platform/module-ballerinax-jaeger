@@ -61,13 +61,6 @@ allprojects {
     }
 }
 
-// Assembled by io.ballerina.plugin (applied in the ballerina subproject):
-// unpackJballerinaTools extracts the bare jballerina-tools distribution here
-// and copyStdlibs merges the ballerinaStdLibs balas into it, so consumers
-// must depend on ':jaeger-extension-ballerina:build' (or copyStdlibs).
-ext.distributionBinPath = "${project.rootDir}/target/ballerina-runtime/bin"
-ext.ballerinaHomeDir = "${buildDir}/ballerina-home"
-
 subprojects {
     // The Ballerina module project is built by io.ballerina.plugin, which
     // registers its own build/test/clean tasks that clash with java-library's.

@@ -46,6 +46,11 @@ def packageName = "jaeger"
 def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
 def testPackages = ["jaeger-server-tests"]
 
+// Same distribution unpackJballerinaTools extracts for :jaeger-extension-ballerina:build
+// (not whatever `bal` happens to be on PATH), so these tests resolve the
+// locally-published ballerinax/jaeger bala with a matching Ballerina version.
+def balDistributionBin = "${project.rootDir}/ballerina/build/jballerina-tools-${ballerinaLangVersion}/bin"
+
 def ballerinaTestTomlFile = new File("${project.projectDir}/jaeger-server-tests/Ballerina.toml")
 def ballerinaTestTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/tests/Ballerina.toml")
 
@@ -176,13 +181,12 @@ task ballerinaTest {
         testPackages.each { testPackage ->
             execHelper.execOperations.exec {
                 workingDir "${project.projectDir}/${testPackage}"
-                environment "BALLERINA_HOME_DIR", rootProject.ext.ballerinaHomeDir
                 environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true ${groupParams}" +
                         " ${disableGroups} ${windowsDisableGroups} ${debugParams}"
                 if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                    commandLine 'cmd', '/c', "${rootProject.ext.distributionBinPath}/bal.bat test ${testParams} && exit %%ERRORLEVEL%%"
+                    commandLine 'cmd', '/c', "${balDistributionBin}/bal.bat test ${testParams} && exit %%ERRORLEVEL%%"
                 } else {
-                    commandLine 'sh', '-c', "${rootProject.ext.distributionBinPath}/bal test ${testParams}"
+                    commandLine 'sh', '-c', "${balDistributionBin}/bal test ${testParams}"
                 }
             }
         }

@@ -39,6 +39,7 @@ def balBuildTarget = "build/bal_build_target"
 // The platform directory (java21, java25, ...) is chosen by the Ballerina
 // distribution in use, so it is matched instead of hardcoded.
 def artifactCacheDir = file("${project.projectDir}/${balBuildTarget}/cache/${packageOrg}/${packageName}/${tomlVersion}")
+def balaDir = file("${project.projectDir}/${balBuildTarget}/bala")
 
 def stripBallerinaExtensionVersion(String extVersion) {
     if (extVersion.matches(project.ext.timestampedVersionRegex)) {
@@ -65,10 +66,6 @@ configurations {
     externalJars {
         transitive false
     }
-    // Ballerina stdlib balas merged into the (bare) jballerina-tools
-    // distribution by the plugin's copyStdlibs task; consumed from
-    // build/jballerina-tools-* (bal pack) and rootDir/target/ballerina-runtime
-    // (ballerina-tests).
     ballerinaStdLibs
 }
 
@@ -80,29 +77,8 @@ dependencies {
         transitive = false
     }
 
-    // Standard library balas: ballerina/jaeger itself imports io, log and
-    // observe; http and its transitive closure are needed by the
-    // ballerina-tests package. ballerinai/observe (the internal observe
-    // module) is what the compiler injects for `observabilityIncluded = true`.
-    ballerinaStdLibs "io.ballerina.stdlib:auth-ballerina:${stdlibAuthVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:cache-ballerina:${stdlibCacheVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:constraint-ballerina:${stdlibConstraintVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:crypto-ballerina:${stdlibCryptoVersion}"
-    ballerinaStdLibs "io.ballerina.lib:data.jsondata-ballerina:${stdlibDataJsonDataVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:file-ballerina:${stdlibFileVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:http-ballerina:${stdlibHttpVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:io-ballerina:${stdlibIoVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:jwt-ballerina:${stdlibJwtVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:log-ballerina:${stdlibLogVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:mime-ballerina:${stdlibMimeVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:oauth2-ballerina:${stdlibOAuth2Version}"
     ballerinaStdLibs "io.ballerina.stdlib:observe-ballerina:${observeVersion}"
     ballerinaStdLibs "io.ballerina:observe-ballerina:${observeInternalVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:os-ballerina:${stdlibOsVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:task-ballerina:${stdlibTaskVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:time-ballerina:${stdlibTimeVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:url-ballerina:${stdlibUrlVersion}"
-    ballerinaStdLibs "io.ballerina.stdlib:uuid-ballerina:${stdlibUuidVersion}"
 
     // NOTE: opentelemetry-api and opentelemetry-context are NOT packed:
     // ballerina-rt shades both artifacts and its copies always win classloading.
@@ -144,10 +120,6 @@ clean {
     delete "${project.projectDir}/target"
     delete "${project.projectDir}/Ballerina.lock"
     delete "${project.projectDir}/ballerina-internal.log"
-    // Distribution assembled by unpackJballerinaTools/copyStdlibs (plus the
-    // packed bala the plugin copies into its repo); stale stdlib versions
-    // would otherwise survive version bumps.
-    delete "${project.rootDir}/target/ballerina-runtime"
 }
 
 task updateTomlFiles {
@@ -195,11 +167,6 @@ task commitTomlFiles {
     }
 }
 
-// Without the java/base plugins there is no default archive base name; the
-// build-main workflow uploads ballerina/build/distributions/jaeger-extension-ballerina-*.zip.
-// NOTE: must stay below the updateTomlFiles/commitTomlFiles definitions:
-// realizing createArtifactZip realizes the plugin's build task, which
-// references both.
 createArtifactZip {
     archiveBaseName = project.name
     archiveVersion = project.version.toString()
@@ -238,16 +205,11 @@ task extractBallerinaClassFiles(type: Copy) {
     into "${project.rootDir.absolutePath}/build/classes"
 }
 
-// Pushes the built bala to the `local` repository of the shared ballerina
-// home (rootProject.ext.ballerinaHomeDir), from where jaeger-server-tests
-// resolves `ballerinax/jaeger`.
+def balDistributionBin = "${project.projectDir}/build/jballerina-tools-${ballerinaLangVersion}/bin"
 task publishBalaFileToLocal {
     def execHelper = project.objects.newInstance(BallerinaExecHelper)
-    // build (via updateTomlFiles -> copyStdlibs -> unpackJballerinaTools)
-    // assembles the stdlib-equipped distribution at target/ballerina-runtime.
     dependsOn build
 
-    def balaDir = file("${project.projectDir}/${balBuildTarget}/bala")
     doLast {
         // The platform in the bala name (java21, java25, ...) depends on the distribution in use.
         def balaFileName = fileTree(balaDir) {
@@ -255,26 +217,15 @@ task publishBalaFileToLocal {
         }.singleFile.name
         execHelper.execOperations.exec {
             workingDir project.projectDir
-            environment "BALLERINA_HOME_DIR", rootProject.ext.ballerinaHomeDir
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "${rootProject.ext.distributionBinPath}/bal.bat push ${balBuildTarget}/bala/${balaFileName} --repository=local && exit %%ERRORLEVEL%%"
+                commandLine 'cmd', '/c', "${balDistributionBin}/bal.bat push ${balBuildTarget}/bala/${balaFileName} --repository=local && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', '-c', "${rootProject.ext.distributionBinPath}/bal push ${balBuildTarget}/bala/${balaFileName} --repository=local"
+                commandLine 'sh', '-c', "${balDistributionBin}/bal push ${balBuildTarget}/bala/${balaFileName} --repository=local"
             }
         }
     }
 }
 
-// The plugin's build/test tasks run `bal pack`/`bal test` against the
-// distribution unpacked by the plugin's own unpackJballerinaTools task;
-// copyStdlibs merges the ballerinaStdLibs balas into that distribution and
-// into rootDir/target/ballerina-runtime (used by ballerina-tests).
-updateTomlFiles.dependsOn copyStdlibs
-// Unlike module-ballerina-otel (where Ballerina.toml/Dependencies.toml bumps
-// are a deliberate, separately-committed step), jaeger's native dependency
-// versions in gradle.properties are expected to flow into Ballerina.toml on
-// every build, matching the pre-migration ballerinaBuild.dependsOn
-// updateTomlVersions behavior.
 build.dependsOn updateTomlFiles
 test.dependsOn updateTomlFiles
 build.dependsOn ":jaeger-extension-native:build"
