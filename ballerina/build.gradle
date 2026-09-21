@@ -226,6 +226,7 @@ task publishBalaFileToLocal {
     }
 }
 
+updateTomlFiles.dependsOn copyStdlibs
 build.dependsOn updateTomlFiles
 test.dependsOn updateTomlFiles
 build.dependsOn ":jaeger-extension-native:build"
