@@ -21,6 +21,13 @@ version = "1.2.0"
 keywords = ["Type/Driver", "Area/Developer Tools", "Vendor/Jaeger", "Observability", "tracing"]
 distribution = "2201.14.0"
 
+[build-options]
+# Pin dependency resolution to the versions in Dependencies.toml: the build
+# compiles against a distribution assembled by copyStdlibs from the stdlib
+# versions in gradle.properties, so letting bal resolve to the latest on
+# Central would drift out of sync with the merged balas.
+sticky = true
+
 [platform.java21]
 graalvmCompatible = true
 
