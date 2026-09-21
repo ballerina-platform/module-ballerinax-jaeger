@@ -40,16 +40,22 @@ def debugParams = ""
 def balJavaDebugParam = ""
 def testParams = "--code-coverage --coverage-format=xml"
 def nativeFlag = ""
+def ballerinaDockerTag = ""
 
 def packageOrg = "ballerinax"
 def packageName = "jaeger"
 def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
 def testPackages = ["jaeger-server-tests"]
 
-// Same distribution unpackJballerinaTools extracts for :jaeger-extension-ballerina:build
-// (not whatever `bal` happens to be on PATH), so these tests resolve the
-// locally-published ballerinax/jaeger bala with a matching Ballerina version.
+// Only used for -PuseLocalBal: the same distribution unpackJballerinaTools
+// extracts for :jaeger-extension-ballerina:build (not whatever `bal` happens
+// to be on PATH), so these tests resolve the locally-published
+// ballerinax/jaeger bala with a matching Ballerina version.
 def balDistributionBin = "${project.rootDir}/ballerina/build/jballerina-tools-${ballerinaLangVersion}/bin"
+// Shared with the host so the containerized `bal` sees the bala
+// :jaeger-extension-ballerina:publishBalaFileToLocal pushed to the 'local'
+// repository, plus the Central download cache (avoids re-pulling every run).
+def ballerinaHomeDir = "${System.getProperty('user.home')}/.ballerina"
 
 def ballerinaTestTomlFile = new File("${project.projectDir}/jaeger-server-tests/Ballerina.toml")
 def ballerinaTestTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/tests/Ballerina.toml")
@@ -76,6 +82,22 @@ gradle.taskGraph.whenReady { graph ->
     }
 }
 
+// jaeger's own ballerinaLangVersion is a timestamped snapshot (matches
+// ext.timestampedVersionRegex), which has no matching `ballerina/ballerina`
+// image tag; the 'nightly' tag is the closest available image in that case.
+// A stable, non-snapshot langVersion would resolve to an exact tag instead.
+static boolean isTimeStampVersion(String version) {
+    return version.trim().split("-").length > 1
+}
+
+static String resolveDockerTag(Project project, String ballerinaLangVersion) {
+    if (project.hasProperty('buildUsingDocker')) {
+        def tag = project.findProperty('buildUsingDocker')
+        return tag == '' ? 'nightly' : tag
+    }
+    return isTimeStampVersion(ballerinaLangVersion) ? 'nightly' : ballerinaLangVersion
+}
+
 task initializeVariables {
     if (project.hasProperty("groups")) {
         groupParams = "--groups ${project.findProperty("groups")}"
@@ -99,6 +121,12 @@ task initializeVariables {
         project.findProperty('skipBalTests').toString().split(",").each {testPackage ->
             testPackages.remove(testPackage)
         }
+    }
+    if (!project.hasProperty('useLocalBal')) {
+        ballerinaDockerTag = resolveDockerTag(project, ballerinaLangVersion)
+        println("[Info] running jaeger-server-tests against the ballerina/ballerina:${ballerinaDockerTag} Docker image")
+    } else {
+        println("[Info] running jaeger-server-tests against the local Ballerina distribution")
     }
 }
 
@@ -179,14 +207,40 @@ task ballerinaTest {
 
     doLast {
         testPackages.each { testPackage ->
-            execHelper.execOperations.exec {
-                workingDir "${project.projectDir}/${testPackage}"
-                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true ${groupParams}" +
-                        " ${disableGroups} ${windowsDisableGroups} ${debugParams}"
-                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                    commandLine 'cmd', '/c', "${balDistributionBin}/bal.bat test ${testParams} && exit %%ERRORLEVEL%%"
-                } else {
-                    commandLine 'sh', '-c', "${balDistributionBin}/bal test ${testParams}"
+            def testPackageDir = "${project.projectDir}/${testPackage}"
+            if (project.hasProperty('useLocalBal')) {
+                execHelper.execOperations.exec {
+                    workingDir testPackageDir
+                    environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true ${groupParams}" +
+                            " ${disableGroups} ${windowsDisableGroups} ${debugParams}"
+                    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                        commandLine 'cmd', '/c', "${balDistributionBin}/bal.bat test ${testParams} && exit %%ERRORLEVEL%%"
+                    } else {
+                        commandLine 'sh', '-c', "${balDistributionBin}/bal test ${testParams}"
+                    }
+                }
+            } else {
+                // --net=host lets the containerized `bal test` reach the
+                // jaeger-server container's ports on localhost; the .ballerina
+                // mount shares the locally-published ballerinax/jaeger bala
+                // and the Central download cache with the container.
+                // -u root is needed to write test output/coverage back to the
+                // host-owned mounted directories. Passing -e HOME=... does NOT
+                // work here: Java's user.home (which `bal` uses to find its
+                // repo dir) is resolved from the OS user database for the
+                // running uid, not from $HOME - and root's entry is /root
+                // regardless of the HOME env var - so the mount target is
+                // /root/.ballerina, not the image's normal /home/ballerina.
+                execHelper.execOperations.exec {
+                    environment "DOCKER_DEFAULT_PLATFORM", "linux/amd64"
+                    environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true ${groupParams}" +
+                            " ${disableGroups} ${windowsDisableGroups} ${debugParams}"
+                    commandLine 'docker', 'run', '--rm', '--net=host', '-u', 'root',
+                            '-v', "${ballerinaHomeDir}:/root/.ballerina",
+                            '-v', "${testPackageDir}:/home/ballerina/${testPackage}",
+                            '-w', "/home/ballerina/${testPackage}",
+                            "ballerina/ballerina:${ballerinaDockerTag}",
+                            'bal', 'test', *testParams.split(/\s+/)
                 }
             }
         }
