@@ -17,27 +17,15 @@
  */
 
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.process.ExecOperations
+
+import javax.inject.Inject
+
+abstract class BallerinaExecHelper {
+    @Inject abstract ExecOperations getExecOperations()
+}
 
 description = 'Ballerina - Jaeger Extension - Ballerina Tests'
-
-configurations {
-    nativeJar {
-        transitive false
-    }
-    externalJars {
-        transitive false
-    }
-    distribution {
-        canBeConsumed true
-        canBeResolved false
-    }
-}
-
-clean {
-    delete "${project.projectDir}/target"
-    delete "${project.projectDir}/Ballerina.lock"
-    delete "${project.projectDir}/ballerina-internal.log"
-}
 
 jar {
     manifest {
@@ -78,7 +66,7 @@ def stripBallerinaExtensionVersion(String extVersion) {
 def skipTests = false
 
 gradle.taskGraph.whenReady { graph ->
-    if (graph.hasTask(":jaeger-extension-ballerina-tests:ballerinaTest")) {
+    if (graph.hasTask(":jaeger-extension-tests:ballerinaTest")) {
         skipTests = true
     }
 }
@@ -110,7 +98,7 @@ task initializeVariables {
 }
 
 task updateTomlVerions {
-    dependsOn ":jaeger-extension-ballerina:ballerinaBuild"
+    dependsOn ":jaeger-extension-ballerina:build"
 
     doLast {
         def newConfig = ballerinaTestTomlFilePlaceHolder.text.replace("@toml.version@", tomlVersion)
@@ -119,20 +107,21 @@ task updateTomlVerions {
 }
 
 task startJaegerServer() {
-    dependsOn ":jaeger-extension-ballerina:ballerinaBuild"
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
+    dependsOn ":jaeger-extension-ballerina:build"
 
     doLast {
         // This check is added to prevent starting the server in Windows OS, since the Docker image does not support
         // for Windows OS.
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
             def stdOut = new ByteArrayOutputStream()
-            exec {
+            execHelper.execOperations.exec {
                 commandLine 'sh', '-c', "docker ps --filter name=jaeger-server"
                 standardOutput = stdOut
             }
             if (!stdOut.toString().contains("jaeger-server")) {
                 println "Starting Jaeger server."
-                exec {
+                execHelper.execOperations.exec {
                     commandLine 'sh', '-c', "docker compose -f $project.projectDir/resources/jaeger-server/docker-compose.yml up -d"
                     standardOutput = stdOut
                 }
@@ -147,18 +136,19 @@ task startJaegerServer() {
 }
 
 task stopJaegerServer() {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     doLast {
         // This check is added to prevent trying to stop the server in Windows OS, since the Docker image not started
         // in Windows OS.
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
             def stdOut = new ByteArrayOutputStream()
-            exec {
+            execHelper.execOperations.exec {
                 commandLine 'sh', '-c', "docker ps --filter name=jaeger-server"
                 standardOutput = stdOut
             }
             if (stdOut.toString().contains("jaeger-server")) {
                 println "Stopping LDAP server."
-                exec {
+                execHelper.execOperations.exec {
                     commandLine 'sh', '-c', "docker stop jaeger-server"
                     standardOutput = stdOut
                 }
@@ -173,7 +163,8 @@ task stopJaegerServer() {
 }
 
 task ballerinaTest {
-    dependsOn ":jaeger-extension-ballerina:ballerinaBuild"
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
+    dependsOn ":jaeger-extension-ballerina:build"
     dependsOn ":jaeger-extension-ballerina:publishBalaFileToLocal"
     dependsOn initializeVariables
     dependsOn updateTomlVerions
@@ -183,11 +174,25 @@ task ballerinaTest {
 
     doLast {
         testPackages.each { testPackage ->
-            def env = "JAVA_OPTS -DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true ${groupParams}" +
-                    " ${disableGroups} ${windowsDisableGroups} ${debugParams}"
-            executeBalCommand("test ${testParams}", "${project.projectDir}/${testPackage}", env)
+            execHelper.execOperations.exec {
+                workingDir "${project.projectDir}/${testPackage}"
+                environment "BALLERINA_HOME_DIR", rootProject.ext.ballerinaHomeDir
+                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true ${groupParams}" +
+                        " ${disableGroups} ${windowsDisableGroups} ${debugParams}"
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    commandLine 'cmd', '/c', "${rootProject.ext.distributionBinPath}/bal.bat test ${testParams} && exit %%ERRORLEVEL%%"
+                } else {
+                    commandLine 'sh', '-c', "${rootProject.ext.distributionBinPath}/bal test ${testParams}"
+                }
+            }
         }
     }
 }
 
 test.dependsOn ballerinaTest
+
+clean {
+    delete "${project.projectDir}/target"
+    delete "${project.projectDir}/Ballerina.lock"
+    delete "${project.projectDir}/ballerina-internal.log"
+}
