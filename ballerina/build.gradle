@@ -65,8 +65,18 @@ ballerina {
 configurations {
     externalJars {
         transitive false
+        // guava (and potentially other externalJars entries) publish Gradle
+        // Module Metadata with multiple usage/JVM-environment variants; a bare
+        // configuration with no attributes can't pick one and fails resolution
+        // with "no matching variant" on a clean cache. Usage alone isn't
+        // enough either - androidRuntimeElements and jreRuntimeElements both
+        // satisfy java-runtime, so TargetJvmEnvironment is needed too to
+        // settle on the standard (non-Android) one.
+        // See https://github.com/ballerina-platform/module-ballerinax-jaeger/pull/212
         attributes {
             attribute(Usage.USAGE_ATTRIBUTE, project.objects.named(Usage, Usage.JAVA_RUNTIME))
+            attribute(TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE,
+                    project.objects.named(TargetJvmEnvironment, TargetJvmEnvironment.STANDARD_JVM))
         }
     }
     ballerinaStdLibs
