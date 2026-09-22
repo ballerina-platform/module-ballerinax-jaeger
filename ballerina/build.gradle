@@ -254,27 +254,27 @@ if (project.hasProperty('buildUsingDocker')) {
     def balaUnzipped = file("${project.projectDir}/build/bala_unzipped")
     def dockerExecHelper = project.objects.newInstance(BallerinaExecHelper)
 
-    def runInBallerinaContainer = { String innerCommand ->
+    // Argument-list execution (no outer/inner shell) so paths containing
+    // spaces can't be mis-split by sh -c/cmd -c word-splitting; -w sets the
+    // container working directory instead of an inner `cd ... &&` shell
+    // fragment. Same pattern ballerina-tests/build.gradle already uses for
+    // its own docker `bal test` invocation.
+    def runInBallerinaContainer = { List<String> innerArgs ->
         dockerExecHelper.execOperations.exec {
             workingDir project.projectDir
             environment "DOCKER_DEFAULT_PLATFORM", "linux/amd64"
-            def dockerCommand = "docker run --rm --net=host -u root " +
-                    "-v ${parentDirectory}:/home/ballerina/${parentDirectory.name} " +
-                    "-v ${projectDirectory}:/home/ballerina/${parentDirectory.name}/${projectDirectory.name} " +
-                    "ballerina/ballerina:${dockerTag} " +
-                    "/bin/sh -c \"cd ${parentDirectory.name}/${projectDirectory.name} && ${innerCommand}\""
-            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "${dockerCommand} && exit %%ERRORLEVEL%%"
-            } else {
-                commandLine 'sh', '-c', dockerCommand
-            }
+            commandLine(['docker', 'run', '--rm', '--net=host', '-u', 'root',
+                    '-v', "${parentDirectory}:/home/ballerina/${parentDirectory.name}",
+                    '-v', "${projectDirectory}:/home/ballerina/${parentDirectory.name}/${projectDirectory.name}",
+                    '-w', "/home/ballerina/${parentDirectory.name}/${projectDirectory.name}",
+                    "ballerina/ballerina:${dockerTag}"] + innerArgs)
         }
     }
 
     tasks.named('build') {
         actions.clear()
         doLast {
-            runInBallerinaContainer("bal pack --target-dir ${balBuildTarget}")
+            runInBallerinaContainer(['bal', 'pack', '--target-dir', balBuildTarget])
             fileTree("${project.projectDir}/${balBuildTarget}/bala") { include '*.bala' }.each { balaFile ->
                 copy {
                     from zipTree(balaFile)
@@ -287,7 +287,7 @@ if (project.hasProperty('buildUsingDocker')) {
     tasks.named('test') {
         actions.clear()
         doLast {
-            runInBallerinaContainer("bal test")
+            runInBallerinaContainer(['bal', 'test'])
         }
     }
 }

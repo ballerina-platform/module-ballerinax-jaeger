@@ -211,12 +211,13 @@ task ballerinaTest {
             if (project.hasProperty('useLocalBal')) {
                 execHelper.execOperations.exec {
                     workingDir testPackageDir
-                    environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true ${groupParams}" +
-                            " ${disableGroups} ${windowsDisableGroups} ${debugParams}"
+                    environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                    def balTestArgs = "${testParams} ${nativeFlag} ${groupParams} ${disableGroups}" +
+                            " ${windowsDisableGroups} ${debugParams}"
                     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                        commandLine 'cmd', '/c', "${balDistributionBin}/bal.bat test ${testParams} && exit %%ERRORLEVEL%%"
+                        commandLine 'cmd', '/c', "${balDistributionBin}/bal.bat test ${balTestArgs} && exit %%ERRORLEVEL%%"
                     } else {
-                        commandLine 'sh', '-c', "${balDistributionBin}/bal test ${testParams}"
+                        commandLine 'sh', '-c', "${balDistributionBin}/bal test ${balTestArgs}"
                     }
                 }
             } else {
@@ -233,14 +234,15 @@ task ballerinaTest {
                 // /root/.ballerina, not the image's normal /home/ballerina.
                 execHelper.execOperations.exec {
                     environment "DOCKER_DEFAULT_PLATFORM", "linux/amd64"
-                    environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true ${groupParams}" +
-                            " ${disableGroups} ${windowsDisableGroups} ${debugParams}"
+                    environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                    def balTestArgs = "${testParams} ${nativeFlag} ${groupParams} ${disableGroups}" +
+                            " ${windowsDisableGroups} ${debugParams}"
                     commandLine 'docker', 'run', '--rm', '--net=host', '-u', 'root',
                             '-v', "${ballerinaHomeDir}:/root/.ballerina",
                             '-v', "${testPackageDir}:/home/ballerina/${testPackage}",
                             '-w', "/home/ballerina/${testPackage}",
                             "ballerina/ballerina:${ballerinaDockerTag}",
-                            'bal', 'test', *testParams.split(/\s+/)
+                            'bal', 'test', *balTestArgs.split(/\s+/)
                 }
             }
         }
