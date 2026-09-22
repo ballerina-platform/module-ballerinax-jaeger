@@ -26,6 +26,10 @@
             <class name="io.ballerina.observe.trace.jaeger.JaegerExporterTest"/>
             <class name="io.ballerina.observe.trace.jaeger.sampler.RateLimiterTest"/>
             <class name="io.ballerina.observe.trace.jaeger.sampler.RateLimitingSamplerTest"/>
+            <class name="io.ballerina.observe.trace.jaeger.logging.LogLevelTest"/>
+            <class name="io.ballerina.observe.trace.jaeger.logging.LogLevelMapperTest"/>
+            <class name="io.ballerina.observe.trace.jaeger.logging.JaegerTraceLogFormatterTest"/>
+            <class name="io.ballerina.observe.trace.jaeger.logging.JaegerTraceLoggerTest"/>
         </classes>
     </test>
 

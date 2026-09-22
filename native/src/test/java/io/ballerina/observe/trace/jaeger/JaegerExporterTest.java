@@ -24,6 +24,9 @@ import org.mockito.ArgumentCaptor;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -168,6 +171,67 @@ public class JaegerExporterTest {
 
         // Verify
         verify(mockExporter, times(2)).export(any());
+    }
+
+    @Test
+    public void testExportWithConsoleLoggingEnabledLogsInfoOnSuccess() {
+        // Setup - console logging at "info" makes both the info-level export
+        // log lines and export() itself loggable.
+        jaegerExporter = new JaegerExporter(mockExporter, TEST_ENDPOINT, true, "", "info");
+        List<SpanData> spans = createMockSpans(2);
+        CompletableResultCode successCode = CompletableResultCode.ofSuccess();
+
+        when(mockExporter.export(any())).thenReturn(successCode);
+
+        // Execute
+        CompletableResultCode result = jaegerExporter.export(spans);
+
+        // Verify
+        verify(mockExporter, times(1)).export(spans);
+        assertTrue(result.isSuccess());
+    }
+
+    @Test
+    public void testExportWithConsoleLoggingEnabledLogsSevereOnFailure() {
+        // Setup - "info" level also makes the higher-severity failure log
+        // line loggable, exercising the isLoggable(SEVERE)/printSevere path.
+        jaegerExporter = new JaegerExporter(mockExporter, TEST_ENDPOINT, true, "", "info");
+        List<SpanData> spans = createMockSpans(1);
+        CompletableResultCode failureCode = CompletableResultCode.ofFailure();
+
+        when(mockExporter.export(any())).thenReturn(failureCode);
+
+        // Execute
+        CompletableResultCode result = jaegerExporter.export(spans);
+
+        // Verify
+        verify(mockExporter, times(1)).export(spans);
+        assertFalse(result.isSuccess());
+    }
+
+    @Test
+    public void testConstructorWithFileLogging() throws IOException {
+        // Setup - a non-empty traceLogFile exercises the file-handler branch
+        // of the constructor, independent of the console flag.
+        Path logFile = Files.createTempFile("jaeger-exporter-test", ".log");
+        logFile.toFile().deleteOnExit();
+
+        jaegerExporter = new JaegerExporter(mockExporter, TEST_ENDPOINT, false, logFile.toString(), "debug");
+        List<SpanData> spans = createMockSpans(1);
+        CompletableResultCode successCode = CompletableResultCode.ofSuccess();
+        when(mockExporter.export(any())).thenReturn(successCode);
+
+        // Execute - should not throw regardless of what gets written to the file.
+        jaegerExporter.export(spans);
+    }
+
+    @Test
+    public void testConstructorAcceptsAllTraceLogLevels() {
+        // Smoke test every getTraceLogLevel branch, including the
+        // unrecognized-value default.
+        for (String level : new String[] {"error", "warn", "info", "debug", "unrecognized"}) {
+            new JaegerExporter(mockExporter, TEST_ENDPOINT, true, "", level);
+        }
     }
 
     private List<SpanData> createMockSpans(int count) {
