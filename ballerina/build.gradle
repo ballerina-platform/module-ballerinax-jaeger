@@ -65,6 +65,9 @@ ballerina {
 configurations {
     externalJars {
         transitive false
+        attributes {
+            attribute(Usage.USAGE_ATTRIBUTE, project.objects.named(Usage, Usage.JAVA_RUNTIME))
+        }
     }
     ballerinaStdLibs
 }
@@ -226,19 +229,6 @@ task publishBalaFileToLocal {
     }
 }
 
-// Workaround for a bug in io.ballerina.plugin 4.0.0's own -PbuildUsingDocker
-// support (BallerinaPlugin.groovy's isTimeStampVersion): it treats ANY tag
-// containing a hyphen - including real, non-snapshot release-channel tags
-// like "2201.14.0-alpha" - as a timestamped dev snapshot, and silently
-// substitutes 'nightly' regardless of what was actually requested. Only an
-// actual timestamp build (matching timestampedVersionRegex, e.g.
-// "2201.14.0-20260917-124200-7f273e6a") should fall back to nightly - same
-// distinction module-ballerina-jaeger's own ballerina-tests build already
-// makes correctly, and the same one https://github.com/wso2/icp-runtime-bridge
-// makes for its own (non-plugin-managed) docker test runner.
-// That resolution is baked into the plugin's compiled build/test task
-// actions with no override hook, so the only fix is to replace those actions
-// with an equivalent that resolves the tag correctly.
 if (project.hasProperty('buildUsingDocker')) {
     def requestedDockerTag = project.findProperty('buildUsingDocker')
     def dockerTag = (requestedDockerTag == null || requestedDockerTag == '') ? 'nightly' :
