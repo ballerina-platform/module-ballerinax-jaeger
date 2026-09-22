@@ -226,6 +226,72 @@ task publishBalaFileToLocal {
     }
 }
 
+// Workaround for a bug in io.ballerina.plugin 4.0.0's own -PbuildUsingDocker
+// support (BallerinaPlugin.groovy's isTimeStampVersion): it treats ANY tag
+// containing a hyphen - including real, non-snapshot release-channel tags
+// like "2201.14.0-alpha" - as a timestamped dev snapshot, and silently
+// substitutes 'nightly' regardless of what was actually requested. Only an
+// actual timestamp build (matching timestampedVersionRegex, e.g.
+// "2201.14.0-20260917-124200-7f273e6a") should fall back to nightly - same
+// distinction module-ballerina-jaeger's own ballerina-tests build already
+// makes correctly, and the same one https://github.com/wso2/icp-runtime-bridge
+// makes for its own (non-plugin-managed) docker test runner.
+// That resolution is baked into the plugin's compiled build/test task
+// actions with no override hook, so the only fix is to replace those actions
+// with an equivalent that resolves the tag correctly.
+if (project.hasProperty('buildUsingDocker')) {
+    def requestedDockerTag = project.findProperty('buildUsingDocker')
+    def dockerTag = (requestedDockerTag == null || requestedDockerTag == '') ? 'nightly' :
+            (requestedDockerTag.toString().matches(project.ext.timestampedVersionRegex) ? 'nightly' :
+                    requestedDockerTag.toString())
+    println("[Info] project builds on docker (patched tag resolution)")
+    println("[Info] using the Ballerina docker image tag: ${dockerTag}")
+
+    def projectDirectory = project.projectDir
+    def parentDirectory = projectDirectory.parentFile
+    // Matches io.ballerina.plugin's own balaArtifact path, so createArtifactZip
+    // (which zips `from project.build`, i.e. this task's outputs) keeps working.
+    def balaUnzipped = file("${project.projectDir}/build/bala_unzipped")
+    def dockerExecHelper = project.objects.newInstance(BallerinaExecHelper)
+
+    def runInBallerinaContainer = { String innerCommand ->
+        dockerExecHelper.execOperations.exec {
+            workingDir project.projectDir
+            environment "DOCKER_DEFAULT_PLATFORM", "linux/amd64"
+            def dockerCommand = "docker run --rm --net=host -u root " +
+                    "-v ${parentDirectory}:/home/ballerina/${parentDirectory.name} " +
+                    "-v ${projectDirectory}:/home/ballerina/${parentDirectory.name}/${projectDirectory.name} " +
+                    "ballerina/ballerina:${dockerTag} " +
+                    "/bin/sh -c \"cd ${parentDirectory.name}/${projectDirectory.name} && ${innerCommand}\""
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "${dockerCommand} && exit %%ERRORLEVEL%%"
+            } else {
+                commandLine 'sh', '-c', dockerCommand
+            }
+        }
+    }
+
+    tasks.named('build') {
+        actions.clear()
+        doLast {
+            runInBallerinaContainer("bal pack --target-dir ${balBuildTarget}")
+            fileTree("${project.projectDir}/${balBuildTarget}/bala") { include '*.bala' }.each { balaFile ->
+                copy {
+                    from zipTree(balaFile)
+                    into new File("${balaUnzipped}/bala/${packageOrg}/${packageName}/${tomlVersion}/${ballerina.platform}")
+                }
+            }
+        }
+    }
+
+    tasks.named('test') {
+        actions.clear()
+        doLast {
+            runInBallerinaContainer("bal test")
+        }
+    }
+}
+
 updateTomlFiles.dependsOn copyStdlibs
 build.dependsOn updateTomlFiles
 test.dependsOn updateTomlFiles
