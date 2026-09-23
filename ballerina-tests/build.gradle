@@ -214,10 +214,14 @@ task ballerinaTest {
                     environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
                     def balTestArgs = "${testParams} ${nativeFlag} ${groupParams} ${disableGroups}" +
                             " ${windowsDisableGroups} ${debugParams}"
+                    // Argument-list execution (no outer shell) so a checkout path
+                    // containing spaces can't be mis-split - same fix already
+                    // applied to the Docker `bal test`/`bal pack` invocations.
                     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                        commandLine 'cmd', '/c', "${balDistributionBin}/bal.bat test ${balTestArgs} && exit %%ERRORLEVEL%%"
+                        commandLine('cmd', '/c', "${balDistributionBin}/bal.bat", 'test',
+                                *balTestArgs.split(/\s+/))
                     } else {
-                        commandLine 'sh', '-c', "${balDistributionBin}/bal test ${balTestArgs}"
+                        commandLine("${balDistributionBin}/bal", 'test', *balTestArgs.split(/\s+/))
                     }
                 }
             } else {
