@@ -51,7 +51,7 @@ jobs:
         run: |
           ./gradlew build
       - name: Update dependency versions
-        run: ./gradlew :jaeger-extension-ballerina:updateTomlVerions
+        run: ./gradlew :jaeger-extension-ballerina:updateTomlFiles
         env:
           packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
           packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
