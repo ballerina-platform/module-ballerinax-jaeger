@@ -17,6 +17,7 @@
  */
 package io.ballerina.observe.trace.jaeger;
 
+import io.ballerina.observe.trace.jaeger.logging.JaegerTraceLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -30,6 +31,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -183,12 +189,20 @@ public class JaegerExporterTest {
 
         when(mockExporter.export(any())).thenReturn(successCode);
 
-        // Execute
-        CompletableResultCode result = jaegerExporter.export(spans);
+        // Execute, capturing what actually gets logged to jaeger.tracelog -
+        // asserting only delegation/result status would still pass if
+        // printInfo/printSevere were deleted from export() entirely.
+        List<LogRecord> records = new ArrayList<>();
+        CompletableResultCode result = withTraceLogCapture(records, () -> jaegerExporter.export(spans));
 
         // Verify
         verify(mockExporter, times(1)).export(spans);
         assertTrue(result.isSuccess());
+        assertTrue(records.stream().anyMatch(r -> r.getLevel() == Level.INFO
+                && r.getMessage().equals("Attempting to export 2 spans to " + TEST_ENDPOINT)));
+        assertTrue(records.stream().anyMatch(r -> r.getLevel() == Level.INFO
+                && r.getMessage().startsWith("Span Payload: ")));
+        assertTrue(records.stream().noneMatch(r -> r.getLevel() == Level.SEVERE));
     }
 
     @Test
@@ -201,12 +215,50 @@ public class JaegerExporterTest {
 
         when(mockExporter.export(any())).thenReturn(failureCode);
 
-        // Execute
-        CompletableResultCode result = jaegerExporter.export(spans);
+        // Execute, capturing the actual log records emitted.
+        List<LogRecord> records = new ArrayList<>();
+        CompletableResultCode result = withTraceLogCapture(records, () -> jaegerExporter.export(spans));
 
         // Verify
         verify(mockExporter, times(1)).export(spans);
         assertFalse(result.isSuccess());
+        assertTrue(records.stream().anyMatch(r -> r.getLevel() == Level.INFO
+                && r.getMessage().equals("Attempting to export 1 spans to " + TEST_ENDPOINT)));
+        assertTrue(records.stream().anyMatch(r -> r.getLevel() == Level.SEVERE
+                && r.getMessage().equals("Failed to export spans to " + TEST_ENDPOINT)));
+    }
+
+    /**
+     * Runs {@code operation}, capturing every {@link LogRecord} it emits via
+     * {@link JaegerTraceLogger#JAEGER_TRACE_LOG} into {@code sink}. The
+     * capturing handler is registered after the exporter under test is
+     * constructed (JaegerTraceLogger's own constructor clears existing
+     * handlers) and removed afterwards so it doesn't leak into other tests.
+     */
+    private CompletableResultCode withTraceLogCapture(List<LogRecord> sink,
+            Supplier<CompletableResultCode> operation) {
+        Logger traceLogger = Logger.getLogger(JaegerTraceLogger.JAEGER_TRACE_LOG);
+        Handler captureHandler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                sink.add(record);
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        captureHandler.setLevel(Level.ALL);
+        traceLogger.addHandler(captureHandler);
+        try {
+            return operation.get();
+        } finally {
+            traceLogger.removeHandler(captureHandler);
+        }
     }
 
     @Test

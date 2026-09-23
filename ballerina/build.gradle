@@ -258,18 +258,31 @@ if (project.hasProperty('buildUsingDocker')) {
     // spaces can't be mis-split by sh -c/cmd -c word-splitting; -w sets the
     // container working directory instead of an inner `cd ... &&` shell
     // fragment. Same pattern ballerina-tests/build.gradle already uses for
-    // its own docker `bal test` invocation.
-    def runInBallerinaContainer = { List<String> innerArgs ->
+    // its own docker `bal test` invocation. containerEnv lets callers (e.g.
+    // the Central push below) pass extra -e KEY=VALUE pairs without dumping
+    // the whole host environment into the container.
+    def runInBallerinaContainer = { List<String> innerArgs, Map<String, String> containerEnv = [:] ->
         dockerExecHelper.execOperations.exec {
             workingDir project.projectDir
             environment "DOCKER_DEFAULT_PLATFORM", "linux/amd64"
+            def envArgs = containerEnv.collectMany { key, value -> ['-e', "${key}=${value}"] }
             commandLine(['docker', 'run', '--rm', '--net=host', '-u', 'root',
                     '-v', "${parentDirectory}:/home/ballerina/${parentDirectory.name}",
-                    '-v', "${projectDirectory}:/home/ballerina/${parentDirectory.name}/${projectDirectory.name}",
-                    '-w', "/home/ballerina/${parentDirectory.name}/${projectDirectory.name}",
+                    '-v', "${projectDirectory}:/home/ballerina/${parentDirectory.name}/${projectDirectory.name}"]
+                    + envArgs +
+                    ['-w', "/home/ballerina/${parentDirectory.name}/${projectDirectory.name}",
                     "ballerina/ballerina:${dockerTag}"] + innerArgs)
         }
     }
+
+    // Same needPublishToCentral guard io.ballerina.plugin's own build task
+    // applies (skip for SNAPSHOT/timestamped versions, require the access
+    // token) - actions.clear() below replaces that task's body entirely, so
+    // without this the Docker path would pack the bala but silently never
+    // push it to Central.
+    def needPublishToCentral = project.hasProperty('publishToCentral') &&
+            project.findProperty('publishToCentral').toString() == 'true'
+    def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
 
     tasks.named('build') {
         actions.clear()
@@ -279,6 +292,21 @@ if (project.hasProperty('buildUsingDocker')) {
                 copy {
                     from zipTree(balaFile)
                     into new File("${balaUnzipped}/bala/${packageOrg}/${packageName}/${tomlVersion}/${ballerina.platform}")
+                }
+            }
+            if (needPublishToCentral) {
+                if (project.version.toString().endsWith('-SNAPSHOT') ||
+                        project.version.toString().matches(project.ext.timestampedVersionRegex)) {
+                    println("[Info] skipping publishing to central: project version is SNAPSHOT or Timestamped SNAPSHOT")
+                } else if (ballerinaCentralAccessToken != null) {
+                    println("[Info] Publishing to the ballerina central...")
+                    def balaFileName = fileTree(balaDir) {
+                        include "${packageOrg}-${packageName}-*-${tomlVersion}.bala"
+                    }.singleFile.name
+                    runInBallerinaContainer(['bal', 'push', "${balBuildTarget}/bala/${balaFileName}"],
+                            ['BALLERINA_CENTRAL_ACCESS_TOKEN': ballerinaCentralAccessToken])
+                } else {
+                    throw new InvalidUserDataException('Central Access Token is not present')
                 }
             }
         }

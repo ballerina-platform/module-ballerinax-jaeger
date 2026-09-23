@@ -34,5 +34,16 @@
         <Class name="~.*Test"/>
         <Bug pattern="MS_EXPOSE_REP"/>
     </Match>
+
+    <!-- withTraceLogCapture's local Logger.getLogger(...) reference is a false
+         positive: JaegerTraceLogger holds that same named logger in its own
+         "private static final Logger traceLogger" field for the JVM's whole
+         lifetime, so it can't actually be weakly-collected between the
+         addHandler/removeHandler calls in this method. -->
+    <Match>
+        <Class name="io.ballerina.observe.trace.jaeger.JaegerExporterTest"/>
+        <Method name="withTraceLogCapture"/>
+        <Bug pattern="LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE"/>
+    </Match>
 </FindBugsFilter>
 
