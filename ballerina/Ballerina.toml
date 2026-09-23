@@ -104,52 +104,52 @@ artifactId = "failureaccess"
 version = "1.0.1"
 
 [[platform.java25.dependency]]
-path = "./lib/grpc-api-1.75.0.jar"
+path = "./lib/grpc-api-1.84.0.jar"
 groupId = "io.grpc"
 artifactId = "grpc-api"
-version = "1.75.0"
+version = "1.84.0"
 
 [[platform.java25.dependency]]
-path = "./lib/grpc-context-1.75.0.jar"
+path = "./lib/grpc-context-1.84.0.jar"
 groupId = "io.grpc"
 artifactId = "grpc-context"
-version = "1.75.0"
+version = "1.84.0"
 
 [[platform.java25.dependency]]
-path = "./lib/grpc-core-1.75.0.jar"
+path = "./lib/grpc-core-1.84.0.jar"
 groupId = "io.grpc"
 artifactId = "grpc-core"
-version = "1.75.0"
+version = "1.84.0"
 
 [[platform.java25.dependency]]
-path = "./lib/grpc-stub-1.75.0.jar"
+path = "./lib/grpc-stub-1.84.0.jar"
 groupId = "io.grpc"
 artifactId = "grpc-stub"
-version = "1.75.0"
+version = "1.84.0"
 
 [[platform.java25.dependency]]
-path = "./lib/grpc-protobuf-1.75.0.jar"
+path = "./lib/grpc-protobuf-1.84.0.jar"
 groupId = "io.grpc"
 artifactId = "grpc-protobuf"
-version = "1.75.0"
+version = "1.84.0"
 
 [[platform.java25.dependency]]
-path = "./lib/grpc-protobuf-lite-1.75.0.jar"
+path = "./lib/grpc-protobuf-lite-1.84.0.jar"
 groupId = "io.grpc"
 artifactId = "grpc-protobuf-lite"
-version = "1.75.0"
+version = "1.84.0"
 
 [[platform.java25.dependency]]
-path = "./lib/grpc-netty-shaded-1.75.0.jar"
+path = "./lib/grpc-netty-shaded-1.84.0.jar"
 groupId = "io.grpc"
 artifactId = "grpc-netty-shaded"
-version = "1.75.0"
+version = "1.84.0"
 
 [[platform.java25.dependency]]
-path = "./lib/protobuf-java-3.25.5.jar"
+path = "./lib/protobuf-java-3.25.9.jar"
 groupId = "com.google.protobuf"
 artifactId = "protobuf-java"
-version = "3.25.5"
+version = "3.25.9"
 
 [[platform.java25.dependency]]
 path = "./lib/netty-handler-4.2.18.Final.jar"
@@ -158,7 +158,7 @@ artifactId = "netty-handler"
 version = "4.2.18.Final"
 
 [[platform.java25.dependency]]
-path = "./lib/perfmark-api-0.23.0.jar"
+path = "./lib/perfmark-api-0.27.0.jar"
 groupId = "io.perfmark"
 artifactId = "perfmark-api"
-version = "0.23.0"
+version = "0.27.0"
