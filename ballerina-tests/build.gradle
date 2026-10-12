@@ -82,10 +82,9 @@ gradle.taskGraph.whenReady { graph ->
     }
 }
 
-// jaeger's own ballerinaLangVersion is a timestamped snapshot (matches
-// ext.timestampedVersionRegex), which has no matching `ballerina/ballerina`
-// image tag; the 'nightly' tag is the closest available image in that case.
-// A stable, non-snapshot langVersion would resolve to an exact tag instead.
+// Timestamped (snapshot) Ballerina versions have no matching `ballerina/ballerina`
+// image tag, so they fall back to 'nightly' - the same mapping ballerina/build.gradle
+// applies to -PbuildUsingDocker, so the build and the tests always use the same image.
 static boolean isTimeStampVersion(String version) {
     return version.trim().split("-").length > 1
 }
@@ -93,7 +92,10 @@ static boolean isTimeStampVersion(String version) {
 static String resolveDockerTag(Project project, String ballerinaLangVersion) {
     if (project.hasProperty('buildUsingDocker')) {
         def tag = project.findProperty('buildUsingDocker')
-        return tag == '' ? 'nightly' : tag
+        if (tag == null || tag.toString() == '' || tag.toString().matches(project.ext.timestampedVersionRegex)) {
+            return 'nightly'
+        }
+        return tag.toString()
     }
     return isTimeStampVersion(ballerinaLangVersion) ? 'nightly' : ballerinaLangVersion
 }
