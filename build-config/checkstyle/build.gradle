@@ -27,7 +27,7 @@ task downloadFiles(type: Download) {
     ])
     overwrite false
     onlyIfNewer true
-    dest buildDir
+    dest layout.buildDirectory.get().asFile
 }
 
 jar {
@@ -38,10 +38,10 @@ clean {
     enabled = false
 }
 
-artifacts.add('default', file("$project.buildDir/checkstyle.xml")) {
+artifacts.add('default', layout.buildDirectory.file("checkstyle.xml")) {
     builtBy('downloadFiles')
 }
 
-artifacts.add('default', file("$project.buildDir/suppressions.xml")) {
+artifacts.add('default', layout.buildDirectory.file("suppressions.xml")) {
     builtBy('downloadFiles')
 }
