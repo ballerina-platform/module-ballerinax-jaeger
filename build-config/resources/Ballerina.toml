@@ -19,6 +19,7 @@ org = "ballerinax"
 name = "jaeger"
 version = "@toml.version@"
 keywords = ["Type/Driver", "Area/Developer Tools", "Vendor/Jaeger", "Observability", "tracing"]
+icon = "icon.png"
 distribution = "2201.14.0"
 
 [build-options]
