@@ -67,16 +67,16 @@ artifactId = "opentelemetry-exporter-otlp-common"
 version = "1.14.0"
 
 [[platform.java21.dependency]]
-path = "./lib/guava-33.2.0-jre.jar"
+path = "./lib/guava-33.7.2-jre.jar"
 groupId = "com.google.guava"
 artifactId = "guava"
-version = "33.2.0-jre"
+version = "33.7.2-jre"
 
 [[platform.java21.dependency]]
-path = "./lib/failureaccess-1.0.1.jar"
+path = "./lib/failureaccess-1.0.3.jar"
 groupId = "com.google.guava"
 artifactId = "failureaccess"
-version = "1.0.1"
+version = "1.0.3"
 
 [[platform.java21.dependency]]
 path = "./lib/grpc-api-1.75.0.jar"
